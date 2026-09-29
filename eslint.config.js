@@ -1,21 +1,46 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
 
-export default defineConfig([
-  globalIgnores(['dist']),
+export default tseslint.config(
+  // Ignore build/dist folders
+  { ignores: ['dist', '.next', 'node_modules'] },
+  
+  // Base JS and TypeScript configs
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  
+  // React & TSX specific config
   {
-    files: ['**/*.{js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-    ],
-    languageOptions: {
-      globals: globals.browser,
-      parserOptions: { ecmaFeatures: { jsx: true } },
+    files: ['**/*.{ts,tsx}'],
+    plugins: {
+      react: reactPlugin,
+      'react-hooks': reactHooks,
     },
-  },
-])
+    languageOptions: {
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    settings: {
+      react: {
+        version: 'detect', // Automatically detects your React version
+      },
+    },
+    rules: {
+      // React rules
+      'react/react-in-jsx-scope': 'off', // Not needed in modern React (17+)
+      'react/jsx-uses-react': 'off',
+      
+      // Hooks rules
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      
+      // TypeScript rules custom overrides
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  }
+);
