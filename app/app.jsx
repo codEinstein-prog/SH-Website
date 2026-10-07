@@ -15,6 +15,7 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      <WhatsAppChat />
 
       <Routes>
         <Route element={<SiteLayout />}>
