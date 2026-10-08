@@ -2,6 +2,8 @@ import { Route, Routes } from "react-router-dom";
 
 import ScrollToTop from "/components/ScrollToTop";
 import SiteLayout from "/components/SiteLayout";
+import WhatsAppChat from "/components/WhatsAppChat/WhatsAppChat.jsx";
+import ReferralWidget from "/components/WhatsAppChat/Referall/Ref.jsx";
 
 import HomePage from "./Pages/HomePage";
 import AboutPage from "./Pages/about/page.jsx";
@@ -15,6 +17,8 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      <WhatsAppChat />
+      <ReferralWidget />
 
       <Routes>
         <Route element={<SiteLayout />}>
