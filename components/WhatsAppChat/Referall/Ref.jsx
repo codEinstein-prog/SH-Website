@@ -11,14 +11,14 @@ const REFERRAL_STEPS = [
   {
     id: "step1",
     icon: "✉️",
-    title: "1. Share Your Link",
-    description: "Send your unique invite link to friends, family, or coworkers.",
+    title: "1. Share The Link",
+    description: "Send your unique invite link to friends, family, or coworkers interested customers.",
   },
   {
     id: "step2",
     icon: "🔑",
     title: "2. They Sign Up",
-    description: "Your friends create a free account using your custom code.",
+    description: "They create a free account using your custom code.",
   },
   {
     id: "step3",
@@ -66,7 +66,7 @@ function WidgetHeader({ onClose }) {
         </div>
 
         <div className="referral-program-info">
-          <strong>Invite & Earn Rewards</strong>
+          <strong>View our Referral Program</strong>
           <span>
             <i className="referral-active-dot" />
             Program is currently active
