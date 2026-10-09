@@ -458,11 +458,11 @@ function ProjectDetailsStep({
             </option>
 
             <option value="Single-family home">
-              Single-family home
+              Residential Property
             </option>
 
             <option value="Multi-family property">
-              Multi-family property
+              Industrial or compound property
             </option>
 
             <option value="Commercial property">

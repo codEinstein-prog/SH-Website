@@ -11,6 +11,11 @@ import {
   Sun,
   Zap,
   BatteryCharging,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  LockKeyhole,
 } from "lucide-react";
 
 import ContentSection from "/components/ContentSection";
@@ -153,6 +158,17 @@ function EstimatePage() {
   const [selectedExtras, setSelectedExtras] = useState([]);
   const [estimateGenerated, setEstimateGenerated] = useState(false);
   const [estimateReference, setEstimateReference] = useState("");
+
+  // Calculator access gate.
+  const [calculatorUnlocked, setCalculatorUnlocked] = useState(false);
+  const [lead, setLead] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+  const [leadSubmitting, setLeadSubmitting] = useState(false);
+  const [leadError, setLeadError] = useState("");
 
   // Solar-specific inputs.
   const [solarState, setSolarState] = useState(solarDefaults.stateCode);
@@ -396,6 +412,69 @@ function EstimatePage() {
     solarCalculation,
   ]);
 
+  async function handleLeadSubmit(event) {
+    event.preventDefault();
+    setLeadError("");
+
+    const payload = {
+      fullName: lead.fullName.trim(),
+      email: lead.email.trim(),
+      phone: lead.phone.trim(),
+      address: lead.address.trim(),
+      source: window.location.href,
+      submittedAt: new Date().toISOString(),
+    };
+
+    if (!payload.fullName || !payload.email || !payload.phone || !payload.address) {
+      setLeadError("Please complete all required fields.");
+      return;
+    }
+
+
+    try {
+      setLeadSubmitting(true);
+
+      const response = await fetch("functions/api/estimate-lead.js", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message || "We could not submit your information. Please try again."
+        );
+      }
+
+      setCalculatorUnlocked(true);
+    } catch (error) {
+      setLeadError(
+        error instanceof Error
+          ? error.message
+          : "We could not submit your information. Please try again."
+      );
+    } finally {
+      setLeadSubmitting(false);
+    }
+  }
+
+  function handleLeadChange(event) {
+    const { name, value } = event.target;
+
+    setLead((current) => ({
+      ...current,
+      [name]: value,
+    }));
+
+    if (leadError) {
+      setLeadError("");
+    }
+  }
+
   function handleServiceChange(event) {
     const newServiceName = event.target.value;
     const newService = pricingConfig.services[newServiceName];
@@ -493,26 +572,36 @@ function EstimatePage() {
           <EstimateIntroduction isSolar={isSolar} />
 
           <div className="border border-taupe bg-white p-5 sm:p-8 lg:p-11">
-            <div className="mb-8">
-              <p className="text-xs font-semibold uppercase tracking-[0.17em] text-gold">
-                Estimate builder
-              </p>
+            {!calculatorUnlocked ? (
+              <CalculatorAccessGate
+                lead={lead}
+                leadError={leadError}
+                leadSubmitting={leadSubmitting}
+                onChange={handleLeadChange}
+                onSubmit={handleLeadSubmit}
+              />
+            ) : (
+              <>
+                <div className="mb-8">
+                  <p className="text-xs font-semibold uppercase tracking-[0.17em] text-gold">
+                    Estimate builder
+                  </p>
 
-              <h2 className="mt-3 font-heading text-4xl font-semibold text-charcoal sm:text-5xl">
-                Configure your project.
-              </h2>
-            </div>
+                  <h2 className="mt-3 font-heading text-4xl font-semibold text-charcoal sm:text-5xl">
+                    Configure your project.
+                  </h2>
+                </div>
 
-            <div className="mb-7 border-l-4 border-gold bg-cream px-5 py-4 text-sm leading-6 text-warmGray">
-              <strong className="text-charcoal">
-                Demonstration pricing:
-              </strong>{" "}
-              The current prices are planning allowances for design and
-              testing. They are not an offer, contract or guaranteed project
-              price.
-            </div>
+                <div className="mb-7 border-l-4 border-gold bg-cream px-5 py-4 text-sm leading-6 text-warmGray">
+                  <strong className="text-charcoal">
+                    Demonstration pricing:
+                  </strong>{" "}
+                  The current prices are planning allowances for design and
+                  testing. They are not an offer, contract or guaranteed project
+                  price.
+                </div>
 
-            <div className="grid gap-6">
+                <div className="grid gap-6">
               <FormField label="Service" htmlFor="estimateService">
                 <select
                   id="estimateService"
@@ -704,10 +793,172 @@ function EstimatePage() {
                 printEstimate={printEstimate}
               />
             )}
+              </>
+            )}
           </div>
         </div>
       </ContentSection>
     </>
+  );
+}
+
+function CalculatorAccessGate({
+  lead,
+  leadError,
+  leadSubmitting,
+  onChange,
+  onSubmit,
+}) {
+  return (
+    <section
+      className="relative overflow-hidden border border-sage bg-[#F7FAF5] p-6 sm:p-8 lg:p-10"
+      aria-labelledby="calculator-access-title"
+    >
+      <div className="mx-auto max-w-2xl">
+        <div className="mb-7 flex items-start gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center bg-forest text-white">
+            <LockKeyhole size={22} />
+          </span>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.17em] text-gold">
+              Calculator access
+            </p>
+
+            <h2
+              id="calculator-access-title"
+              className="mt-2 font-heading text-3xl font-semibold text-charcoal sm:text-4xl"
+            >
+              Get your preliminary estimate.
+            </h2>
+
+            <p className="mt-3 max-w-xl text-sm leading-6 text-warmGray">
+              Enter your contact information below to unlock the project
+              calculator. We use these details to follow up about your estimate
+              and consultation options.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={onSubmit} className="grid gap-5" noValidate>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <FormField label="Full name *" htmlFor="leadFullName">
+              <div className="relative">
+                <User
+                  size={17}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-warmGray"
+                />
+                <input
+                  id="leadFullName"
+                  name="fullName"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={lead.fullName}
+                  onChange={onChange}
+                  placeholder="Your full name"
+                  className={`${inputClasses} pl-11`}
+                />
+              </div>
+            </FormField>
+
+            <FormField label="Email address *" htmlFor="leadEmail">
+              <div className="relative">
+                <Mail
+                  size={17}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-warmGray"
+                />
+                <input
+                  id="leadEmail"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={lead.email}
+                  onChange={onChange}
+                  placeholder="you@example.com"
+                  className={`${inputClasses} pl-11`}
+                />
+              </div>
+            </FormField>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <FormField label="Phone number *" htmlFor="leadPhone">
+              <div className="relative">
+                <Phone
+                  size={17}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-warmGray"
+                />
+                <input
+                  id="leadPhone"
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  required
+                  value={lead.phone}
+                  onChange={onChange}
+                  placeholder="Your phone number"
+                  className={`${inputClasses} pl-11`}
+                />
+              </div>
+            </FormField>
+
+            <FormField label="Property address *" htmlFor="leadAddress">
+              <div className="relative">
+                <MapPin
+                  size={17}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-warmGray"
+                />
+                <input
+                  id="leadAddress"
+                  name="address"
+                  type="text"
+                  autoComplete="street-address"
+                  required
+                  value={lead.address}
+                  onChange={onChange}
+                  placeholder="Property address"
+                  className={`${inputClasses} pl-11`}
+                />
+              </div>
+            </FormField>
+          </div>
+
+          {leadError && (
+            <p
+              className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              role="alert"
+            >
+              {leadError}
+            </p>
+          )}
+
+          <div className="border-t border-sage pt-6">
+            <p className="mb-4 text-xs leading-5 text-warmGray">
+              By continuing, you are providing your contact details so the
+              business can respond to your estimate request. The calculator
+              provides preliminary planning figures, not a final quotation.
+            </p>
+
+            <button
+              type="submit"
+              disabled={leadSubmitting}
+              className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 bg-forest px-7 text-sm font-semibold text-white transition hover:bg-charcoal disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              {leadSubmitting ? (
+                "Submitting..."
+              ) : (
+                <>
+                  <Calculator size={17} />
+                  Unlock calculator
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
   );
 }
 
@@ -990,7 +1241,7 @@ function EstimateIntroduction({ isSolar }) {
       </p>
 
       <h2 className="font-heading text-5xl font-semibold leading-[0.95] text-charcoal sm:text-6xl">
-        Useful direction—not a final quote.
+        Useful direction not a final quote.
       </h2>
 
       <p className="mt-7 leading-7 text-warmGray">

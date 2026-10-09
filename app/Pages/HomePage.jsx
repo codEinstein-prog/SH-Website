@@ -46,7 +46,7 @@ const processSteps = [
 const projects = [
   {
     category: "Solar · Residential",
-    title: "Whole-home energy upgrade",
+    title: "Whole home energy upgrade",
     description:
       "Integrated solar array and exterior modernization.",
     image: "/images/pexels-rdne-8782730.jpg",
@@ -242,7 +242,7 @@ function ProjectsSection() {
               Finished beautifully.
             </>
           }
-          description="Representative project imagery illustrates the finish and architectural direction planned for the final portfolio."
+          description="Representative project imagery."
         />
 
         <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr] lg:grid-rows-2">
@@ -253,12 +253,6 @@ function ProjectsSection() {
             />
           ))}
         </div>
-
-        <p className="mt-5 max-w-3xl text-xs leading-6 text-white/45">
-          Project photographs and final case-study information should
-          be replaced with approved client work before the public
-          website launches.
-        </p>
       </div>
     </section>
   );

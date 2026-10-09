@@ -25,13 +25,13 @@ const values = [
     title: "Craft",
     icon: Hammer,
     description:
-      "Careful planning and detail-oriented work designed to perform well and look considered."
+      "Careful planning and detail oriented work designed to perform well and look considered."
   },
   {
     title: "Stewardship",
     icon: ShieldCheck,
     description:
-      "Respect for the property, the client's investment and the long-term value of every recommendation."
+      "Respect for the property, the client's investment and the long term value of every recommendation."
   }
 ];
 
@@ -72,7 +72,7 @@ function AboutPage() {
       <PageHero
         eyebrow="About us"
         title="Better homes begin with better decisions."
-        description="We bring roofing, solar and impact-window expertise together to help property owners plan with clarity and build with confidence."
+        description="We bring roofing, solar and impact window expertise together to help property owners plan with clarity and build with confidence."
         image="/images/hero-home.png"
         imageAlt="Contemporary home with roofing, solar panels and impact windows"
       />
