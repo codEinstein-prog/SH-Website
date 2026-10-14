@@ -36,6 +36,20 @@ Local previews use Miniflare's placeholder `Request.cf` metadata without a netwo
 
 Local tool usage metrics are disabled by default. Set `WRANGLER_SEND_METRICS=true` to opt in.
 
+## Estimate Calculator Lead Verification
+
+The estimate calculator verifies an email through Hunter.io before unlocking. After Hunter confirms that the address is valid and deliverable, the calculator unlocks and the lead details are sent to the configured Google Form.
+
+Configure these values as server-side environment variables for the API functions:
+
+- `HUNTER_API_KEY`: Hunter.io API key. Keep this secret; do not use a `VITE_`-prefixed variable.
+- `GOOGLE_FORM_ID`
+- `GOOGLE_FORM_NAME_ENTRY`
+- `GOOGLE_FORM_EMAIL_ENTRY`
+- `GOOGLE_FORM_PHONE_ENTRY`
+- `GOOGLE_FORM_ADDRESS_ENTRY`
+- Optional: `GOOGLE_FORM_SOURCE_ENTRY` and `GOOGLE_FORM_SUBMITTED_AT_ENTRY`
+
 ## Included Shape
 
 - edit site code under `app/`

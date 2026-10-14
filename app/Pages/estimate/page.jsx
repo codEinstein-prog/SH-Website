@@ -169,6 +169,7 @@ function EstimatePage() {
   });
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [leadError, setLeadError] = useState("");
+  const [leadSubmissionError, setLeadSubmissionError] = useState("");
 
   // Solar-specific inputs.
   const [solarState, setSolarState] = useState(solarDefaults.stateCode);
@@ -414,27 +415,72 @@ function EstimatePage() {
 
   async function handleLeadSubmit(event) {
     event.preventDefault();
+
+    if (leadSubmitting || calculatorUnlocked) return;
+
     setLeadError("");
+    setLeadSubmissionError("");
+    setCalculatorUnlocked(false);
 
     const payload = {
       fullName: lead.fullName.trim(),
-      email: lead.email.trim(),
+      email: lead.email.trim().toLowerCase(),
       phone: lead.phone.trim(),
       address: lead.address.trim(),
       source: window.location.href,
       submittedAt: new Date().toISOString(),
     };
 
-    if (!payload.fullName || !payload.email || !payload.phone || !payload.address) {
+    if (
+      !payload.fullName ||
+      !payload.email ||
+      !payload.phone ||
+      !payload.address
+    ) {
       setLeadError("Please complete all required fields.");
       return;
     }
 
-
     try {
       setLeadSubmitting(true);
 
-      const response = await fetch("functions/api/estimate-lead.js", {
+
+    const verificationResponse = await fetch(
+      "/api/verify-email",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: payload.email,
+        }),
+      }
+    );
+
+    const verification = await verificationResponse
+      .json()
+      .catch(() => null);
+
+    console.log("Verification response:", {
+      httpStatus: verificationResponse.status,
+      verification,
+    });
+
+    if (
+      !verificationResponse.ok ||
+      verification?.success !== true ||
+      verification?.verified !== true
+    ) {
+      throw new Error(
+        verification?.error ||
+        "Email verification was unsuccessful."
+      );
+    }
+
+
+      // STEP 2: Send lead to backend for Google Forms
+      const leadResponse = await fetch("/api/estimate-lead", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -442,20 +488,32 @@ function EstimatePage() {
         body: JSON.stringify(payload),
       });
 
-      const result = await response.json().catch(() => ({}));
+      const leadResult = await leadResponse
+        .json()
+        .catch(() => null);
 
-      if (!response.ok) {
+      if (
+        !leadResponse.ok ||
+        leadResult?.success !== true
+      ) {
         throw new Error(
-          result?.message || "We could not submit your information. Please try again."
+          leadResult?.error ||
+          "We could not submit your information."
         );
       }
 
+      // STEP 3: Unlock only after both succeed
       setCalculatorUnlocked(true);
+
     } catch (error) {
+      console.error("Calculator access failed:", error);
+
+      setCalculatorUnlocked(false);
+
       setLeadError(
         error instanceof Error
           ? error.message
-          : "We could not submit your information. Please try again."
+          : "Verification failed. Please try again."
       );
     } finally {
       setLeadSubmitting(false);
@@ -582,6 +640,19 @@ function EstimatePage() {
               />
             ) : (
               <>
+                {leadSubmitting && (
+                  <p className="mb-5 text-sm text-warmGray" role="status">
+                    Sending your contact information...
+                  </p>
+                )}
+                {leadSubmissionError && (
+                  <p
+                    className="mb-5 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                    role="alert"
+                  >
+                    {leadSubmissionError}
+                  </p>
+                )}
                 <div className="mb-8">
                   <p className="text-xs font-semibold uppercase tracking-[0.17em] text-gold">
                     Estimate builder

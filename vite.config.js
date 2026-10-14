@@ -1,16 +1,17 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  plugins: [react()], // Back to normal! PostCSS handles Tailwind v3 automatically
+  plugins: [react()],
 
   build: {
     outDir: "dist",
-    sourcemap: true
+    sourcemap: true,
   },
 
   server: {
     port: 5173,
-    open: true
-  }
+    open: true,
+  },
 });
