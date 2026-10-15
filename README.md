@@ -50,6 +50,17 @@ Configure these values as server-side environment variables for the API function
 - `GOOGLE_FORM_ADDRESS_ENTRY`
 - Optional: `GOOGLE_FORM_SOURCE_ENTRY` and `GOOGLE_FORM_SUBMITTED_AT_ENTRY`
 
+## WhatsApp Live Chat Adapter
+
+The chat widget sends both quick-question selections and typed messages to the same-origin `/api/chat` endpoint. The endpoint forwards requests to the OpenWA Chatwoot adapter and keeps any adapter token server-side.
+
+Set these server-side environment variables:
+
+- `CHATWOOT_ADAPTER_API_URL`: full HTTPS URL for the adapter's message endpoint.
+- Optional: `CHATWOOT_ADAPTER_API_TOKEN`: bearer token, if required by the adapter.
+
+The adapter contract is not configured yet. The current scaffold sends JSON containing `type` (`message` or `quick_question`), `message`, and optional `optionId` and `conversationId`. It expects JSON containing a non-empty `reply` and optionally `conversationId`. Update the request payload, authentication, and response mapping in `functions/api/chat.js` to match the adapter's actual API before enabling it.
+
 ## Included Shape
 
 - edit site code under `app/`

@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import "./whatsapp.css";
 
-// ============================================================
-// WhatsApp Configuration
-// ============================================================
-// Use the international format WITHOUT +, spaces, or dashes.
-// Example Jamaica: 18765551234
-const WHATSAPP_NUMBER = "18765551234";
-
 const INITIAL_MESSAGE = {
   id: 1,
   sender: "bot",
@@ -111,16 +104,15 @@ function ChatMessage({ message }) {
 // ============================================================
 function WhatsAppChat() {
   const [isOpen, setIsOpen] = useState(false);
-
-  // Chat history is only created when the component is opened.
   const [messages, setMessages] = useState([]);
-
   const [input, setInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const [conversationId, setConversationId] = useState("");
 
   const openChat = () => {
     setIsOpen(true);
 
-    // Initialize conversation only on first open.
     if (messages.length === 0) {
       setMessages([INITIAL_MESSAGE]);
     }
@@ -130,72 +122,86 @@ function WhatsAppChat() {
     setIsOpen(false);
   };
 
-  // ----------------------------------------------------------
-  // Open WhatsApp with a pre-filled message
-  // ----------------------------------------------------------
-  const openWhatsApp = (message) => {
-    const encodedMessage = encodeURIComponent(message);
+  const sendMessage = async ({ type, message, displayText, optionId }) => {
+    if (isSending) {
+      return;
+    }
 
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    setIsSending(true);
+    setSendError("");
 
-    window.open(url, "_blank", "noopener,noreferrer");
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type,
+          message,
+          optionId,
+          conversationId: conversationId || undefined,
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error || "Your message could not be sent. Please try again."
+        );
+      }
+
+      if (typeof result.reply !== "string" || !result.reply.trim()) {
+        throw new Error("The chat service returned an invalid response.");
+      }
+
+      if (typeof result.conversationId === "string") {
+        setConversationId(result.conversationId);
+      }
+
+      setMessages((previous) => [
+        ...previous,
+        { id: `${Date.now()}-user`, sender: "user", text: displayText },
+        { id: `${Date.now()}-bot`, sender: "bot", text: result.reply },
+      ]);
+      return true;
+    } catch (error) {
+      setSendError(
+        error instanceof Error
+          ? error.message
+          : "Your message could not be sent. Please try again."
+      );
+      return false;
+    } finally {
+      setIsSending(false);
+    }
   };
 
-  // ----------------------------------------------------------
-  // Quick option handler
-  // ----------------------------------------------------------
   const handleQuickOption = (option) => {
-    const userMessage = {
-      id: Date.now(),
-      sender: "user",
-      text: option.label,
-    };
-
-    setMessages((previous) => [...previous, userMessage]);
-
-    // Small delay makes the interaction feel natural.
-    window.setTimeout(() => {
-      const botMessage = {
-        id: Date.now() + 1,
-        sender: "bot",
-        text: "Absolutely. Click the button below to continue the conversation on WhatsApp.",
-      };
-
-      setMessages((previous) => [...previous, botMessage]);
-    }, 350);
+    void sendMessage({
+      type: "quick_question",
+      message: option.message,
+      displayText: option.label,
+      optionId: option.id,
+    });
   };
 
-  // ----------------------------------------------------------
-  // Send typed message
-  // ----------------------------------------------------------
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const trimmedMessage = input.trim();
 
-    if (!trimmedMessage) {
+    if (!trimmedMessage || isSending) {
       return;
     }
 
-    const userMessage = {
-      id: Date.now(),
-      sender: "user",
-      text: trimmedMessage,
-    };
+    const sent = await sendMessage({
+      type: "message",
+      message: trimmedMessage,
+      displayText: trimmedMessage,
+    });
 
-    setMessages((previous) => [...previous, userMessage]);
-
-    setInput("");
-
-    window.setTimeout(() => {
-      const botMessage = {
-        id: Date.now() + 1,
-        sender: "bot",
-        text: "Thanks for your message! Continue on WhatsApp and our team can assist you directly.",
-      };
-
-      setMessages((previous) => [...previous, botMessage]);
-    }, 350);
+    if (sent) {
+      setInput("");
+    }
   };
 
   return (
@@ -225,28 +231,31 @@ function WhatsAppChat() {
                   key={option.id}
                   className="whatsapp-quick-button"
                   onClick={() => handleQuickOption(option)}
-                >
-                  {option.label}
-                </button>
+                    disabled={isSending}
+                  >
+                    {option.label}
+                  </button>
               ))}
-            </div>
           </div>
 
-          {/* Continue to WhatsApp */}
-          <div className="whatsapp-handoff">
-            <button
-              type="button"
-              className="whatsapp-handoff-button"
-              onClick={() =>
-                openWhatsApp(
-                  "Hi, I found your website and would like some assistance."
-                )
-              }
-            >
-              <WhatsAppIcon size={20} />
-              Continue on WhatsApp
-            </button>
-          </div>
+              {isSending && (
+                <p className="px-5 pb-3 text-sm text-gray-500" role="status">
+                  Sending...
+                </p>
+              )}
+              {sendError && (
+                <p
+                  className="mx-5 mb-3 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                  role="alert"
+                >
+                  {sendError}
+                </p>
+              )}
+            </div>
+
+            <div className="whatsapp-handoff">
+              Messages and quick questions go to our support team.
+            </div>
 
           {/* Message Input */}
           <form
@@ -259,13 +268,14 @@ function WhatsAppChat() {
               onChange={(event) => setInput(event.target.value)}
               placeholder="Type a message..."
               aria-label="Type a message"
+              disabled={isSending}
             />
 
             <button
               type="submit"
               className="whatsapp-send-button"
               aria-label="Send message"
-              disabled={!input.trim()}
+              disabled={!input.trim() || isSending}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -280,7 +290,7 @@ function WhatsAppChat() {
           </form>
 
           <div className="whatsapp-powered">
-            Powered by WhatsApp
+            Live chat
           </div>
         </div>
       )}
