@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./whatsapp.css";
 
 const INITIAL_MESSAGE = {
@@ -108,25 +108,56 @@ function WhatsAppChat() {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState("");
-  const [conversationId, setConversationId] = useState("");
+  const pollingRef = useRef(false);
+  const sendingRef = useRef(false);
+  const messagesRef = useRef([]);
+
+  const loadMessages = useCallback(async () => {
+    if (pollingRef.current || sendingRef.current) return;
+    pollingRef.current = true;
+    try {
+      const response = await fetch("/api/chat", {
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Unable to load messages");
+
+      const history = (result.messages || []).map((item) => ({
+        id: `chatwoot-${item.id}`,
+        sender: item.messageType === 0 || item.messageType === "incoming" ? "user" : "bot",
+        text: item.content,
+      }));
+      // Display the same existing welcome greeting and retain server message IDs.
+      messagesRef.current = history;
+      setMessages([INITIAL_MESSAGE, ...history]);
+    } catch (error) {
+      console.error("Chat history error:", error);
+      // Do not clear existing messages when a poll fails.
+    } finally {
+      pollingRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    void loadMessages();
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") void loadMessages();
+    }, 5000);
+    return () => window.clearInterval(interval);
+  }, [isOpen, loadMessages]);
 
   const openChat = () => {
     setIsOpen(true);
-
-    if (messages.length === 0) {
-      setMessages([INITIAL_MESSAGE]);
-    }
+    if (messages.length === 0) setMessages([INITIAL_MESSAGE]);
   };
 
-  const closeChat = () => {
-    setIsOpen(false);
-  };
+  const closeChat = () => setIsOpen(false);
 
   const sendMessage = async ({ type, message, displayText, optionId }) => {
-    if (isSending) {
-      return;
-    }
-
+    if (sendingRef.current) return false;
+    sendingRef.current = true;
     setIsSending(true);
     setSendError("");
 
@@ -134,44 +165,30 @@ function WhatsAppChat() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type,
-          message,
-          optionId,
-          conversationId: conversationId || undefined,
-        }),
+        credentials: "same-origin",
+        body: JSON.stringify({ type, message, optionId }),
       });
       const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Your message could not be sent.");
 
-      if (!response.ok) {
-        throw new Error(
-          result?.error || "Your message could not be sent. Please try again."
-        );
+      // Chatwoot confirms message creation; a human reply arrives separately.
+      if (result.message?.id) {
+        const newMessage = {
+          id: `chatwoot-${result.message.id}`,
+          sender: "user",
+          text: message,
+        };
+        setMessages((previous) => previous.some((m) => m.id === newMessage.id)
+          ? previous : [...previous, newMessage]);
       }
-
-      if (typeof result.reply !== "string" || !result.reply.trim()) {
-        throw new Error("The chat service returned an invalid response.");
-      }
-
-      if (typeof result.conversationId === "string") {
-        setConversationId(result.conversationId);
-      }
-
-      setMessages((previous) => [
-        ...previous,
-        { id: `${Date.now()}-user`, sender: "user", text: displayText },
-        { id: `${Date.now()}-bot`, sender: "bot", text: result.reply },
-      ]);
       return true;
     } catch (error) {
-      setSendError(
-        error instanceof Error
-          ? error.message
-          : "Your message could not be sent. Please try again."
-      );
+      setSendError(`${error instanceof Error ? error.message : "Message failed."} Check the conversation before retrying.`);
       return false;
     } finally {
+      sendingRef.current = false;
       setIsSending(false);
+      void loadMessages();
     }
   };
 
