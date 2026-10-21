@@ -299,7 +299,7 @@ function PrivacyPage() {
             </p>
 
             <ul>
-              <li>Calendly or another appointment platform.</li>
+              <li>Cal.com for appointment scheduling.</li>
               <li>Google Forms or another form provider.</li>
               <li>Google Analytics.</li>
               <li>Google Maps.</li>

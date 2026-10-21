@@ -36,6 +36,29 @@ Local previews use Miniflare's placeholder `Request.cf` metadata without a netwo
 
 Local tool usage metrics are disabled by default. Set `WRANGLER_SEND_METRICS=true` to opt in.
 
+## Cal.com appointment booking
+
+The [booking form](./app/Pages/booking/page.jsx) calls the same-origin `/api/booking` [Pages Function](./functions/api/booking.js). It checks Cal.com availability and books the earliest future slot matching the visitor's date, local time zone, and morning (before 1 PM), afternoon (1 PM onward), or flexible preference. The confirmation displays the actual appointment time and distinguishes accepted bookings from requests awaiting host approval.
+
+Add these server-side values to your local `.env` (see [.env.example](./.env.example)):
+
+```dotenv
+CALCOM_API_KEY=cal_your_api_key
+CALCOM_EVENT_TYPE_ID=123456
+```
+
+- Generate the key in Cal.com under Settings → Developer → API keys.
+- Use the numeric ID of a regular, non-recurring event type owned by that account (visible in its event editor URL). Configure its availability, connected calendar, duration, and default meeting location in Cal.com. All three website appointment categories currently use this event type, with the selected category recorded in the booking notes.
+- Keep the built-in additional-notes field (`notes`) enabled. The integration records appointment type, service, phone, address, and additional information there; it also stores the shorter project fields in metadata. Additional required custom questions, payments, and email-verification challenges are not handled by this form, so use an event type without those requirements.
+- If SMS reminders are enabled, visitors must include an international phone number with country code. Other phone formats are saved in notes but cannot be sent as the Cal.com SMS number.
+- Never give these variables a `VITE_` prefix. The API key stays on the server.
+
+`npm run dev` and `npm run preview` serve the booking endpoint locally using [the Vite middleware](./scripts/booking-api-dev.js). Restart the server after changing `.env`. For production, deploy `dist` with the root `functions` directory to Cloudflare Pages and set the same two variables in the Pages project's environment settings (store the API key as a secret). A static-only host cannot run the booking endpoint; local `.env` values are not deployed automatically.
+
+Optionally set `bookingUrl` in [the site configuration](./app/config/site.js) to your public `https://cal.com/username/event` link to display the external scheduling button.
+
+The integration uses Cal.com's [slots API](https://cal.com/docs/api-reference/v2/slots/get-available-time-slots-for-an-event-type) (`cal-api-version: 2024-09-04`) and [booking API](https://cal.com/docs/api-reference/v2/bookings/create-a-booking) (`cal-api-version: 2026-02-25`). Run `npm test` for booking integration tests and `npm run build` for the production frontend build.
+
 ## Estimate Calculator Lead Verification
 
 The estimate calculator verifies an email through Hunter.io before unlocking. After Hunter confirms that the address is valid and deliverable, the calculator unlocks and the lead details are sent to the configured Google Form.

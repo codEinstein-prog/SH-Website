@@ -37,10 +37,10 @@ export async function onRequestPost({ request, env }) {
     return jsonResponse({ success: false, error: booking.error }, 400);
   }
 
-  const apiToken = env.CALENDLY_API_TOKEN;
-  const eventTypeUri = env.CALENDLY_EVENT_TYPE_URI;
-  if (!apiToken || !isCalendlyEventTypeUri(eventTypeUri)) {
-    console.error("Calendly booking configuration is missing or invalid.");
+  const apiKey = env.CALCOM_API_KEY?.trim();
+  const eventTypeId = Number(env.CALCOM_EVENT_TYPE_ID);
+  if (!apiKey || !Number.isSafeInteger(eventTypeId) || eventTypeId <= 0) {
+    console.error("Cal.com booking configuration is missing or invalid.");
     return jsonResponse({
       success: false,
       error: "Online booking is temporarily unavailable. Please try again later.",
@@ -53,15 +53,17 @@ export async function onRequestPost({ request, env }) {
   const rangeEnd = dateStart + 2 * DAY_IN_MS;
 
   const availabilityUrl = new URL(
-    "https://api.calendly.com/event_type_available_times"
+    "https://api.cal.com/v2/slots"
   );
-  availabilityUrl.searchParams.set("event_type", eventTypeUri);
+  availabilityUrl.searchParams.set("eventTypeId", String(eventTypeId));
+  availabilityUrl.searchParams.set("timeZone", value.inviteeTimezone);
+  availabilityUrl.searchParams.set("format", "range");
   availabilityUrl.searchParams.set(
-    "start_time",
+    "start",
     new Date(rangeStart).toISOString()
   );
   availabilityUrl.searchParams.set(
-    "end_time",
+    "end",
     new Date(rangeEnd).toISOString()
   );
 
@@ -70,11 +72,13 @@ export async function onRequestPost({ request, env }) {
     availabilityResponse = await fetch(availabilityUrl, {
       headers: {
         Accept: "application/json",
-        Authorization: `Bearer ${apiToken}`,
+        Authorization: `Bearer ${apiKey}`,
+        "cal-api-version": "2024-09-04",
       },
+      signal: AbortSignal.timeout(15000),
     });
   } catch (error) {
-    console.error("Calendly availability request failed:", error);
+    console.error("Cal.com availability request failed:", error.name);
     return jsonResponse({
       success: false,
       error: "We could not check appointment availability. Please try again.",
@@ -83,7 +87,7 @@ export async function onRequestPost({ request, env }) {
 
   if (!availabilityResponse.ok) {
     console.error(
-      "Calendly availability request failed with HTTP status:",
+      "Cal.com availability request failed with HTTP status:",
       availabilityResponse.status
     );
     return jsonResponse({
@@ -96,25 +100,31 @@ export async function onRequestPost({ request, env }) {
   try {
     availability = await availabilityResponse.json();
   } catch (error) {
-    console.error("Calendly returned invalid availability data:", error);
+    console.error("Cal.com returned invalid availability data:", error.name);
     return jsonResponse({
       success: false,
       error: "We could not check appointment availability. Please try again.",
     }, 502);
   }
 
-  if (!Array.isArray(availability?.collection)) {
-    console.error("Calendly availability response did not include a collection.");
+  if (
+    availability?.status !== "success" ||
+    !availability.data ||
+    typeof availability.data !== "object" ||
+    Array.isArray(availability.data) ||
+    !Object.values(availability.data).every(Array.isArray)
+  ) {
+    console.error("Cal.com availability response did not include valid slots.");
     return jsonResponse({
       success: false,
       error: "We could not check appointment availability. Please try again.",
     }, 502);
   }
 
-  const matchingSlot = availability.collection
+  const matchingSlot = Object.values(availability.data).flat()
     .filter((slot) => {
-      const start = Date.parse(slot?.start_time);
-      if (!Number.isFinite(start)) {
+      const start = Date.parse(slot?.start);
+      if (!Number.isFinite(start) || start < rangeStart || start >= rangeEnd) {
         return false;
       }
 
@@ -134,7 +144,7 @@ export async function onRequestPost({ request, env }) {
       return true;
     })
     .sort((first, second) =>
-      Date.parse(first.start_time) - Date.parse(second.start_time)
+      Date.parse(first.start) - Date.parse(second.start)
     )[0];
 
   if (!matchingSlot) {
@@ -145,56 +155,103 @@ export async function onRequestPost({ request, env }) {
   }
 
   const bookingPayload = {
-    event_type: eventTypeUri,
-    start_time: matchingSlot.start_time,
-    invitee: {
+    eventTypeId,
+    start: new Date(matchingSlot.start).toISOString(),
+    attendee: {
       name: value.fullName,
       email: value.email,
-      timezone: value.inviteeTimezone,
+      timeZone: value.inviteeTimezone,
+      language: "en",
     },
-    questions_and_answers: [
-      { question: "Appointment type", answer: value.appointmentType, position: 0 },
-      { question: "Service", answer: value.service, position: 1 },
-      { question: "Telephone number", answer: value.phone, position: 2 },
-      { question: "Property address", answer: value.propertyAddress || "Not provided", position: 3 },
-      { question: "Additional information", answer: value.notes || "None", position: 4 },
-    ],
+    bookingFieldsResponses: {
+      notes: [
+        `Appointment type: ${value.appointmentType}`,
+        `Service: ${value.service}`,
+        `Telephone number: ${value.phone}`,
+        `Property address: ${value.propertyAddress || "Not provided"}`,
+        `Additional information: ${value.notes || "None"}`,
+      ].join("\n"),
+    },
+    metadata: {
+      source: "website",
+      appointmentType: value.appointmentType,
+      service: value.service,
+      phone: value.phone,
+      propertyAddress: value.propertyAddress,
+    },
   };
+
+  // Cal.com requires international format for SMS reminders. Preserve all
+  // phone formats in the notes, without guessing the visitor's country code.
+  const internationalPhone = value.phone.replace(/[\s().-]/g, "");
+  if (/^\+[1-9]\d{6,14}$/.test(internationalPhone)) {
+    bookingPayload.attendee.phoneNumber = internationalPhone;
+  }
 
   let bookingResponse;
   try {
-    bookingResponse = await fetch("https://api.calendly.com/invitees", {
+    bookingResponse = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
       headers: {
         Accept: "application/json",
-        Authorization: `Bearer ${apiToken}`,
+        Authorization: `Bearer ${apiKey}`,
+        "cal-api-version": "2026-02-25",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(bookingPayload),
+      signal: AbortSignal.timeout(20000),
     });
   } catch (error) {
-    console.error("Calendly booking request failed:", error);
+    console.error("Cal.com booking request failed:", error.name);
     return jsonResponse({
       success: false,
-      error: "Calendly could not confirm the appointment. Please try again.",
+      error: "We could not verify your booking. Please check your email before trying again.",
     }, 502);
   }
 
-  if (bookingResponse.status !== 201) {
+  if (bookingResponse.status === 409) {
+    return jsonResponse({
+      success: false,
+      error: "That appointment time is no longer available. Please choose another date or time window.",
+    }, 409);
+  }
+
+  if (!bookingResponse.ok) {
     console.error(
-      "Calendly booking request failed with HTTP status:",
+      "Cal.com booking request failed with HTTP status:",
       bookingResponse.status
     );
     return jsonResponse({
       success: false,
-      error: "Calendly could not confirm the appointment. Please try again.",
+      error: "We could not confirm the appointment. Please check your email before trying again or contact us for help.",
+    }, 502);
+  }
+
+  let result;
+  try {
+    result = await bookingResponse.json();
+  } catch {
+    // The booking may have been created even if its response was interrupted.
+  }
+
+  if (
+    result?.status !== "success" ||
+    !result.data?.uid ||
+    !Number.isFinite(Date.parse(result.data?.start)) ||
+    !["accepted", "pending"].includes(result.data?.status)
+  ) {
+    console.error("Cal.com returned an invalid booking confirmation.");
+    return jsonResponse({
+      success: false,
+      error: "We could not verify your booking. Please check your email before trying again.",
     }, 502);
   }
 
   return jsonResponse({
     success: true,
-    scheduledAt: matchingSlot.start_time,
+    scheduledAt: result.data.start,
     timezone: value.inviteeTimezone,
+    status: result.data.status,
   });
 }
 
@@ -316,21 +373,6 @@ function getLocalTimeParts(timestamp, timeZone) {
     date: `${values.year}-${values.month}-${values.day}`,
     hour: Number(values.hour),
   };
-}
-
-function isCalendlyEventTypeUri(value) {
-  if (typeof value !== "string") {
-    return false;
-  }
-
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" &&
-      url.hostname === "api.calendly.com" &&
-      /^\/event_types\/[^/]+$/.test(url.pathname);
-  } catch {
-    return false;
-  }
 }
 
 function jsonResponse(data, status = 200) {

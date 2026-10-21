@@ -34,8 +34,10 @@ function BookingPage() {
   const [formError, setFormError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmation, setConfirmation] = useState(null);
 
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
@@ -85,7 +87,7 @@ function BookingPage() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (!validateForm()) {
+    if (submitting || !validateForm()) {
       return;
     }
 
@@ -93,35 +95,31 @@ function BookingPage() {
     setFormError("");
 
     try {
-      /*
-       * Connect your booking form to an API here.
-       *
-       * Example:
-       *
-       * const response = await fetch(
-       *   "https://your-api.example.com/bookings",
-       *   {
-       *     method: "POST",
-       *     headers: {
-       *       "Content-Type": "application/json"
-       *     },
-       *     body: JSON.stringify(formData)
-       *   }
-       * );
-       *
-       * if (!response.ok) {
-       *   throw new Error("Booking request failed.");
-       * }
-       */
+      const response = await fetch("/api/booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          inviteeTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        })
+      });
+      const result = await response.json();
 
-      console.log("Booking request:", formData);
+      if (!response.ok || result.success !== true) {
+        setFormError(result.error || "Your appointment could not be booked. Please try again.");
+        return;
+      }
 
+      if (!Number.isFinite(Date.parse(result.scheduledAt)) ||
+          !["accepted", "pending"].includes(result.status)) {
+        throw new Error("Invalid booking confirmation.");
+      }
+
+      setConfirmation(result);
       setSubmitted(true);
-    } catch (error) {
-      console.error(error);
-
+    } catch {
       setFormError(
-        "Your appointment request could not be submitted. Please try again."
+        "We could not verify your booking. Please check your email before trying again."
       );
     } finally {
       setSubmitting(false);
@@ -146,9 +144,11 @@ function BookingPage() {
             {submitted ? (
               <BookingSuccess
                 formData={formData}
+                confirmation={confirmation}
                 resetForm={() => {
                   setFormData(initialBookingData);
                   setSubmitted(false);
+                  setConfirmation(null);
                 }}
               />
             ) : (
@@ -166,7 +166,7 @@ function BookingPage() {
       </ContentSection>
 
       {siteConfig.bookingUrl && (
-        <CalendlySection />
+        <CalComSection />
       )}
     </>
   );
@@ -199,7 +199,7 @@ function BookingIntroduction() {
         <BookingInformationItem
           icon={Clock3}
           title="Availability confirmation"
-          description="Requested dates and times are confirmed after the team's calendar is reviewed."
+          description="We book the earliest available time within your selected date and time window. Some appointments require team approval."
         />
 
         <BookingInformationItem
@@ -299,6 +299,11 @@ function BookingForm({
       </div>
 
       <div className="grid gap-6">
+        <p className="text-sm leading-6 text-warmGray">
+          We will book the earliest available time in your selected window,
+          using your local time zone. Morning is before 1 PM; afternoon is
+          1 PM onward. Flexible includes any available time that day.
+        </p>
         <fieldset>
           <legend className="mb-3 text-sm font-semibold text-charcoal">
             Appointment type *
@@ -414,6 +419,7 @@ function BookingForm({
               id="bookingPhone"
               name="phone"
               type="tel"
+              placeholder="Include country code, e.g. +1 786 555 0123"
               autoComplete="tel"
               value={formData.phone}
               onChange={handleChange}
@@ -552,8 +558,16 @@ function BookingForm({
 
 function BookingSuccess({
   formData,
+  confirmation,
   resetForm
 }) {
+  const pending = confirmation.status === "pending";
+  const appointmentTime = new Intl.DateTimeFormat(undefined, {
+    dateStyle: "full",
+    timeStyle: "short",
+    timeZone: confirmation.timezone
+  }).format(new Date(confirmation.scheduledAt));
+
   return (
     <div
       className="border border-sage bg-[#EDF2ED] p-6 sm:p-9"
@@ -565,28 +579,25 @@ function BookingSuccess({
       />
 
       <p className="mt-7 text-xs font-semibold uppercase tracking-[0.17em] text-gold">
-        Request received
+        {pending ? "Awaiting approval" : "Booking confirmed"}
       </p>
 
       <h2 className="mt-3 font-heading text-4xl font-semibold text-charcoal sm:text-5xl">
-        Your appointment request has been prepared.
+        {pending ? "Your appointment is awaiting approval." : "Your appointment is booked."}
       </h2>
 
       <p className="mt-6 leading-7 text-warmGray">
-        Thank you, {formData.fullName}. Your requested date is{" "}
+        Thank you, {formData.fullName}. Your appointment time is{" "}
         <strong className="text-charcoal">
-          {formData.preferredDate}
+          {appointmentTime}
         </strong>{" "}
-        during the{" "}
-        <strong className="text-charcoal">
-          {formData.preferredTime.toLowerCase()}
-        </strong>
-        .
+        ({confirmation.timezone}).
       </p>
 
       <p className="mt-4 leading-7 text-warmGray">
-        The appointment remains pending until the team reviews
-        availability and sends confirmation.
+        {pending
+          ? "The team will review your request and send confirmation by email."
+          : "Check your email for your appointment details. For site visits, the team will also verify your property location."}
       </p>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -609,7 +620,7 @@ function BookingSuccess({
   );
 }
 
-function CalendlySection() {
+function CalComSection() {
   return (
     <section className="bg-forest py-20 text-white">
       <div className="mx-auto grid max-w-site gap-8 px-5 sm:px-8 lg:grid-cols-[1fr_auto] lg:items-center">
