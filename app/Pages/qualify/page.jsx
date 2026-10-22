@@ -51,6 +51,7 @@ function QualifyPage() {
   const [formData, setFormData] = useState(initialFormData);
   const [formError, setFormError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
@@ -184,24 +185,25 @@ function QualifyPage() {
       return;
     }
 
-    /*
-     * Connect the form to your backend, Google Apps Script,
-     * Formspree, Supabase or CRM here.
-     *
-     * Example:
-     *
-     * await fetch("YOUR_API_ENDPOINT", {
-     *   method: "POST",
-     *   headers: {
-     *     "Content-Type": "application/json"
-     *   },
-     *   body: JSON.stringify(formData)
-     * });
-     */
-
-    console.log("Qualification submission:", formData);
-
-    setSubmitted(true);
+    if (submitting) return;
+    setSubmitting(true);
+    setFormError("");
+    try {
+      const response = await fetch("/api/qualification-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || result?.success !== true) {
+        throw new Error(result?.error || "Your qualification could not be submitted.");
+      }
+      setSubmitted(true);
+    } catch (error) {
+      setFormError(error.message || "Your qualification could not be submitted. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -293,9 +295,10 @@ function QualifyPage() {
                   ) : (
                     <button
                       type="submit"
+                      disabled={submitting}
                       className="inline-flex min-h-[50px] items-center justify-center gap-2 bg-forest px-7 text-sm font-semibold text-white transition hover:bg-charcoal"
                     >
-                      Complete qualification
+                      {submitting ? "Submitting..." : "Complete qualification"}
                       <ChevronRight size={17} />
                     </button>
                   )}

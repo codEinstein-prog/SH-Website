@@ -154,7 +154,7 @@ function EstimatePage() {
   const [quantity, setQuantity] = useState(
     pricingConfig.services[serviceNames[0]].defaultQuantity
   );
-  const [complexity, setComplexity] = useState("standard");
+  const [complexity, setComplexity] = useState("shingle-roof");
   const [selectedExtras, setSelectedExtras] = useState([]);
   const [estimateGenerated, setEstimateGenerated] = useState(false);
   const [estimateReference, setEstimateReference] = useState("");
@@ -539,7 +539,7 @@ function EstimatePage() {
 
     setSelectedService(newServiceName);
     setQuantity(newService.defaultQuantity);
-    setComplexity("standard");
+    setComplexity("shingle-roof");
     setSelectedExtras([]);
     setEstimateGenerated(false);
     setEstimateReference("");
@@ -592,7 +592,7 @@ function EstimatePage() {
     setQuantity(
       Number(firstService?.defaultQuantity ?? firstService?.minimumQuantity ?? 1)
     );
-    setComplexity("standard");
+    setComplexity("shingle-roof");
     setSelectedExtras([]);
     setEstimateGenerated(false);
     setEstimateReference("");
@@ -721,7 +721,7 @@ function EstimatePage() {
                 </FormField>
 
                 <FormField
-                  label="Project complexity"
+                  label="Roof type"
                   htmlFor="estimateComplexity"
                 >
                   <select
@@ -1451,7 +1451,7 @@ function EstimateResult({
           />
 
           <SummaryItem
-            label="Complexity"
+            label="Roof type"
             value={complexity.label}
           />
 
