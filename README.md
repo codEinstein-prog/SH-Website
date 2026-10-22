@@ -38,6 +38,8 @@ Local tool usage metrics are disabled by default. Set `WRANGLER_SEND_METRICS=tru
 
 ## Cal.com appointment booking
 
+The qualification form posts its completed answers to `/api/qualification-lead`, which forwards them to the same Google Form used by the estimate lead flow. It uses the configured per-field entry IDs and can place any fields without a dedicated entry into `GOOGLE_FORM_NOTES_ENTRY`. Configure the Google Form variables in [.env.example](./.env.example); the form ID remains server-side.
+
 The [booking form](./app/Pages/booking/page.jsx) calls the same-origin `/api/booking` [Pages Function](./functions/api/booking.js). It checks Cal.com availability and books the earliest future slot matching the visitor's date, local time zone, and morning (before 1 PM), afternoon (1 PM onward), or flexible preference. The confirmation displays the actual appointment time and distinguishes accepted bookings from requests awaiting host approval.
 
 Add these server-side values to your local `.env` (see [.env.example](./.env.example)):

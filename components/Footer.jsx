@@ -75,12 +75,13 @@ function Footer() {
             <a
               href={siteConfig.socialLinks.instagram}
               aria-label="Instagram"
-                target="_blank"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <img
-                src="/public/instagram.png" 
+                src="/instagram.png"
                 alt="Instagram" 
-                className="h-10 w-10 transition hover:opacity-80" 
+                className="h-10 w-10 object-contain brightness-0 invert transition hover:opacity-80"
             />
             </a>
 
@@ -91,9 +92,9 @@ function Footer() {
             rel="noopener noreferrer"
             >
             <img 
-                src="/public/facebook.png" 
+                src="/facebook.png"
                 alt="Facebook" 
-                className="h-10 w-10 transition hover:opacity-80" 
+                className="h-10 w-10 object-contain brightness-0 invert transition hover:opacity-80"
             />
             </a>
           </div>

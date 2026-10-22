@@ -1,11 +1,13 @@
 import { Readable } from "node:stream";
 import { onRequestPost } from "../functions/api/booking.js";
+import { onRequestPost as onQualificationLeadPost } from "../functions/api/qualification-lead.js";
 
 // Run the same Pages Function locally, keeping credentials on the server.
 export function bookingApiPlugin(env) {
   function install(server) {
     server.middlewares.use(async (req, res, next) => {
-      if (req.url?.split("?")[0] !== "/api/booking") return next();
+      const path = req.url?.split("?")[0];
+      if (path !== "/api/booking" && path !== "/api/qualification-lead") return next();
 
       if (req.method !== "POST") {
         res.writeHead(405, { Allow: "POST", "Content-Type": "application/json" });
@@ -21,7 +23,7 @@ export function bookingApiPlugin(env) {
           body: Readable.toWeb(req),
           duplex: "half",
         });
-        const response = await onRequestPost({ request, env });
+        const response = await (path === "/api/qualification-lead" ? onQualificationLeadPost : onRequestPost)({ request, env });
         res.writeHead(response.status, Object.fromEntries(response.headers));
         res.end(await response.text());
       } catch {

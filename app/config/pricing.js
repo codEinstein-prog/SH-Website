@@ -17,18 +17,18 @@ export const pricingConfig = {
 
   complexityLevels: [
     {
-      label: "Straightforward",
-      value: "straightforward",
+      label: "Flat roof",
+      value: "flat-roof",
       multiplier: 0.95
     },
     {
-      label: "Standard",
-      value: "standard",
+      label: "Shingle roof",
+      value: "shingle-roof",
       multiplier: 1
     },
     {
-      label: "Complex",
-      value: "complex",
+      label: "Tile roof",
+      value: "tile-roof",
       multiplier: 1.2
     }
   ],
