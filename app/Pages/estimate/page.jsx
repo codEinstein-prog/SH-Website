@@ -147,6 +147,24 @@ const solarDefaults = {
   projectionYears: 25,
 };
 
+const additionalRoofTypes = [
+  {
+    label: "Standing seam roof",
+    value: "standing-seam-roof",
+    multiplier: 1.1,
+  },
+  {
+    label: "Metal roof",
+    value: "metal-roof",
+    multiplier: 1.15,
+  },
+  {
+    label: "Slab roof",
+    value: "slab-roof",
+    multiplier: 1.05,
+  },
+];
+
 function EstimatePage() {
   const serviceNames = Object.keys(pricingConfig.services);
 
@@ -192,9 +210,25 @@ function EstimatePage() {
   const maximumQuantity = Number(service?.maximumQuantity ?? 50);
   const defaultQuantity = Number(service?.defaultQuantity ?? minimumQuantity);
   const isSolar = selectedService.toLowerCase() === "solar";
+  const isRoofing = selectedService.toLowerCase() === "roofing";
+  const isWindows = selectedService.toLowerCase() === "impact windows";
+  const complexityLevels = [
+    ...pricingConfig.complexityLevels,
+    ...additionalRoofTypes,
+  ];
+  const quantityLabel = isSolar
+    ? "System size"
+    : isWindows
+      ? "Amount of windows"
+      : service.unitLabel;
+  const quantitySuffix = isSolar
+    ? "kW"
+    : isWindows
+      ? "windows"
+      : service.unitSuffix;
 
   const selectedComplexity =
-    pricingConfig.complexityLevels.find(
+    complexityLevels.find(
       (level) => level.value === complexity
     ) ?? pricingConfig.complexityLevels[1];
 
@@ -690,7 +724,7 @@ function EstimatePage() {
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <FormField
-                  label={`${service.unitLabel} (${service.unitSuffix})`}
+                  label={`${quantityLabel} (${quantitySuffix})`}
                   htmlFor="estimateQuantity"
                 >
                 <input
@@ -720,26 +754,28 @@ function EstimatePage() {
                   )}
                 </FormField>
 
-                <FormField
-                  label="Roof type"
-                  htmlFor="estimateComplexity"
-                >
-                  <select
-                    id="estimateComplexity"
-                    value={complexity}
-                    onChange={(event) => {
-                      setComplexity(event.target.value);
-                      setEstimateGenerated(false);
-                    }}
-                    className={inputClasses}
+                {isRoofing && (
+                  <FormField
+                    label="Roof type"
+                    htmlFor="estimateComplexity"
                   >
-                    {pricingConfig.complexityLevels.map((level) => (
-                      <option key={level.value} value={level.value}>
-                        {level.label}
-                      </option>
-                    ))}
-                  </select>
-                </FormField>
+                    <select
+                      id="estimateComplexity"
+                      value={complexity}
+                      onChange={(event) => {
+                        setComplexity(event.target.value);
+                        setEstimateGenerated(false);
+                      }}
+                      className={inputClasses}
+                    >
+                      {complexityLevels.map((level) => (
+                        <option key={level.value} value={level.value}>
+                          {level.label}
+                        </option>
+                      ))}
+                    </select>
+                  </FormField>
+                )}
               </div>
 
               {isSolar && (
@@ -1393,6 +1429,18 @@ function EstimateResult({
   );
 
   const isSolar = Boolean(calculation.solar);
+  const isRoofing = serviceName.toLowerCase() === "roofing";
+  const isWindows = serviceName.toLowerCase() === "impact windows";
+  const quantityLabel = isSolar
+    ? "System size"
+    : isWindows
+      ? "Amount of windows"
+      : service.unitLabel;
+  const quantitySuffix = isSolar
+    ? "kW"
+    : isWindows
+      ? "windows"
+      : service.unitSuffix;
 
   return (
     <section
@@ -1444,16 +1492,16 @@ function EstimateResult({
           <SummaryItem label="Service" value={serviceName} />
 
           <SummaryItem
-            label={service.unitLabel}
-            value={`${Number(quantity).toLocaleString()} ${
-              service.unitSuffix
-            }`}
+            label={quantityLabel}
+            value={`${Number(quantity).toLocaleString()} ${quantitySuffix}`}
           />
 
-          <SummaryItem
-            label="Roof type"
-            value={complexity.label}
-          />
+          {isRoofing && (
+            <SummaryItem
+              label="Roof type"
+              value={complexity.label}
+            />
+          )}
 
           <SummaryItem
             label="Additional allowances"
