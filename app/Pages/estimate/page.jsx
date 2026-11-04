@@ -147,6 +147,9 @@ const solarDefaults = {
   projectionYears: 25,
 };
 
+const SOLAR_LEASE_ESCALATION_RATE = 1.5;
+const SOLAR_LEASE_BASE_TERM_YEARS = 25;
+
 const additionalRoofTypes = [
   {
     label: "Standing seam roof",
@@ -165,6 +168,67 @@ const additionalRoofTypes = [
   },
 ];
 
+const windowStyleOptions = [
+  {
+    label: "Recommended",
+    value: "recommended",
+    averageCost: 1700,
+  },
+  {
+    label: "Picture / Fixed",
+    value: "picture-fixed",
+    averageCost: 1700,
+  },
+  {
+    label: "Single-Hung",
+    value: "single-hung",
+    averageCost: 1325,
+  },
+  {
+    label: "Double-Hung",
+    value: "double-hung",
+    averageCost: 1420,
+  },
+  {
+    label: "Casement",
+    value: "casement",
+    averageCost: 1725,
+  },
+  {
+    label: "Sliding Glass Doors",
+    value: "sliding-glass-doors",
+    averageCost: 7000,
+  },
+];
+
+const windowMaterialOptions = [
+  {
+    label: "Recommended",
+    value: "recommended",
+    averageCost: 1000,
+  },
+  {
+    label: "Vinyl",
+    value: "vinyl",
+    averageCost: 550,
+  },
+  {
+    label: "Aluminum",
+    value: "aluminum",
+    averageCost: 800,
+  },
+  {
+    label: "Composite",
+    value: "composite",
+    averageCost: 1000,
+  },
+  {
+    label: "Fiberglass",
+    value: "fiberglass",
+    averageCost: 1162.5,
+  },
+];
+
 function EstimatePage() {
   const serviceNames = Object.keys(pricingConfig.services);
 
@@ -173,6 +237,8 @@ function EstimatePage() {
     pricingConfig.services[serviceNames[0]].defaultQuantity
   );
   const [complexity, setComplexity] = useState("shingle-roof");
+  const [windowStyle, setWindowStyle] = useState("recommended");
+  const [windowMaterial, setWindowMaterial] = useState("recommended");
   const [selectedExtras, setSelectedExtras] = useState([]);
   const [estimateGenerated, setEstimateGenerated] = useState(false);
   const [estimateReference, setEstimateReference] = useState("");
@@ -226,6 +292,17 @@ function EstimatePage() {
     : isWindows
       ? "windows"
       : service.unitSuffix;
+  const selectedWindowStyle =
+    windowStyleOptions.find((option) => option.value === windowStyle) ??
+    windowStyleOptions[0];
+  const selectedWindowMaterial =
+    windowMaterialOptions.find((option) => option.value === windowMaterial) ??
+    windowMaterialOptions[0];
+  const recommendedMaterialCost = windowMaterialOptions[0].averageCost;
+  const windowUnitRate = Math.max(
+    0,
+    selectedWindowStyle.averageCost - selectedWindowMaterial.averageCost
+  );
 
   const selectedComplexity =
     complexityLevels.find(
@@ -286,15 +363,24 @@ function EstimatePage() {
       .filter((extra) => selectedExtras.includes(extra.id))
       .reduce((total, extra) => total + Number(extra.price || 0), 0);
 
-    const totalInvestment =
-      installationCost + extraCost;
+    const leaseTermYears = Math.min(
+      Math.max(Number(projectionYears) || SOLAR_LEASE_BASE_TERM_YEARS, 20),
+      25
+    );
+    const leaseBaseCost = installationCost + extraCost;
+    const baseAnnualLeasePayment =
+      leaseBaseCost / SOLAR_LEASE_BASE_TERM_YEARS;
 
     const yearlyProjection = [];
     let cumulativeSavings = 0;
+    let cumulativeLeaseCost = 0;
     let paybackYear = null;
     let paybackMonth = null;
 
-    for (let year = 1; year <= Number(projectionYears); year += 1) {
+    for (let year = 1; year <= leaseTermYears; year += 1) {
+      const annualLeasePayment =
+        baseAnnualLeasePayment *
+        Math.pow(1 + SOLAR_LEASE_ESCALATION_RATE / 100, year - 1);
       const inflationMultiplier = Math.pow(
         1 + Number(utilityInflation) / 100,
         year - 1
@@ -310,15 +396,16 @@ function EstimatePage() {
         electricitySavings + annualExportRevenue;
 
       cumulativeSavings += annualBenefit;
+      cumulativeLeaseCost += annualLeasePayment;
 
-      if (paybackYear === null && cumulativeSavings >= totalInvestment) {
+      if (paybackYear === null && cumulativeSavings >= cumulativeLeaseCost) {
         paybackYear = year;
 
         const previousCumulative =
           cumulativeSavings - annualBenefit;
 
         const remainingAtStart =
-          Math.max(totalInvestment - previousCumulative, 0);
+          Math.max(cumulativeLeaseCost - previousCumulative, 0);
 
         paybackMonth =
           annualBenefit > 0
@@ -335,13 +422,17 @@ function EstimatePage() {
       yearlyProjection.push({
         year,
         annualUtilityCost,
+        annualLeasePayment,
         electricitySavings,
         exportRevenue: annualExportRevenue,
         annualBenefit,
         cumulativeSavings,
-        netPosition: cumulativeSavings - totalInvestment,
+        cumulativeLeaseCost,
+        netPosition: cumulativeSavings - cumulativeLeaseCost,
       });
     }
+
+    const totalLeaseCost = cumulativeLeaseCost;
 
     const finalProjection =
       yearlyProjection[yearlyProjection.length - 1];
@@ -350,11 +441,11 @@ function EstimatePage() {
       finalProjection?.cumulativeSavings ?? 0;
 
     const totalProjectedNetBenefit =
-      totalProjectedSavings - totalInvestment;
+      totalProjectedSavings - totalLeaseCost;
 
     const simpleRoi =
-      totalInvestment > 0
-        ? (totalProjectedNetBenefit / totalInvestment) * 100
+      totalLeaseCost > 0
+        ? (totalProjectedNetBenefit / totalLeaseCost) * 100
         : 0;
 
     return {
@@ -366,7 +457,11 @@ function EstimatePage() {
       annualExportRevenue,
       installationCost,
       extraCost,
-      totalInvestment,
+      totalInvestment: totalLeaseCost,
+      totalLeaseCost,
+      leaseTermYears,
+      leaseEscalationRate: SOLAR_LEASE_ESCALATION_RATE,
+      firstYearLeasePayment: baseAnnualLeasePayment,
       yearlyProjection,
       paybackYear,
       paybackMonth,
@@ -417,7 +512,7 @@ function EstimatePage() {
 
     const baseCalculation =
       service.basePrice +
-      validQuantity * service.unitRate +
+      validQuantity * (isWindows ? windowUnitRate : service.unitRate) +
       extrasTotal;
 
     const adjustedEstimate =
@@ -431,7 +526,8 @@ function EstimatePage() {
 
     return {
       basePrice: service.basePrice,
-      quantityCost: validQuantity * service.unitRate,
+      quantityCost:
+        validQuantity * (isWindows ? windowUnitRate : service.unitRate),
       extrasTotal,
       adjustedEstimate,
       lowerEstimate: roundToNearestHundred(lowerEstimate),
@@ -444,6 +540,8 @@ function EstimatePage() {
     selectedComplexity,
     service,
     isSolar,
+    isWindows,
+    windowUnitRate,
     solarCalculation,
   ]);
 
@@ -574,6 +672,8 @@ function EstimatePage() {
     setSelectedService(newServiceName);
     setQuantity(newService.defaultQuantity);
     setComplexity("shingle-roof");
+    setWindowStyle("recommended");
+    setWindowMaterial("recommended");
     setSelectedExtras([]);
     setEstimateGenerated(false);
     setEstimateReference("");
@@ -609,7 +709,10 @@ function EstimatePage() {
         Number(utilityInflation) < 0 ||
         Number(solarOffset) < 0 ||
         Number(solarOffset) > 100 ||
-        Number(monthlyExportCredit) < 0)
+        Number(monthlyExportCredit) < 0 ||
+        Number(projectionYears) < 20 ||
+        Number(projectionYears) > 25
+      )
     ) {
       return;
     }
@@ -627,6 +730,8 @@ function EstimatePage() {
       Number(firstService?.defaultQuantity ?? firstService?.minimumQuantity ?? 1)
     );
     setComplexity("shingle-roof");
+    setWindowStyle("recommended");
+    setWindowMaterial("recommended");
     setSelectedExtras([]);
     setEstimateGenerated(false);
     setEstimateReference("");
@@ -754,7 +859,7 @@ function EstimatePage() {
                   )}
                 </FormField>
 
-                {isRoofing && (
+                {(isRoofing || isSolar) && (
                   <FormField
                     label="Roof type"
                     htmlFor="estimateComplexity"
@@ -777,6 +882,52 @@ function EstimatePage() {
                   </FormField>
                 )}
               </div>
+
+              {isWindows && (
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <FormField
+                    label="Window style"
+                    htmlFor="windowStyle"
+                  >
+                    <select
+                      id="windowStyle"
+                      value={windowStyle}
+                      onChange={(event) => {
+                        setWindowStyle(event.target.value);
+                        setEstimateGenerated(false);
+                      }}
+                      className={inputClasses}
+                    >
+                      {windowStyleOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label} ({option.range})
+                        </option>
+                      ))}
+                    </select>
+                  </FormField>
+
+                  <FormField
+                    label="Frame material"
+                    htmlFor="windowMaterial"
+                  >
+                    <select
+                      id="windowMaterial"
+                      value={windowMaterial}
+                      onChange={(event) => {
+                        setWindowMaterial(event.target.value);
+                        setEstimateGenerated(false);
+                      }}
+                      className={inputClasses}
+                    >
+                      {windowMaterialOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label} ({option.range})
+                        </option>
+                      ))}
+                    </select>
+                  </FormField>
+                </div>
+              )}
 
               {isSolar && (
                 <SolarInputs
@@ -895,6 +1046,8 @@ function EstimatePage() {
                 quantity={quantity}
                 complexity={selectedComplexity}
                 selectedExtras={selectedExtras}
+                windowStyle={selectedWindowStyle}
+                windowMaterial={selectedWindowMaterial}
                 calculation={calculation}
                 estimateReference={estimateReference}
                 printEstimate={printEstimate}
@@ -1264,15 +1417,15 @@ function SolarInputs({
         </FormField>
 
         <FormField
-          label="Projection period"
+          label="Lease term / projection period"
           htmlFor="projectionYears"
         >
           <div className="relative">
             <input
               id="projectionYears"
               type="number"
-              min="1"
-              max="40"
+              min="20"
+              max="25"
               step="1"
               value={projectionYears}
               onChange={(event) =>
@@ -1281,7 +1434,7 @@ function SolarInputs({
               className={`${inputClasses} pr-16`}
             />
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-warmGray">
-              years
+              years (20–25)
             </span>
           </div>
         </FormField>
@@ -1299,8 +1452,8 @@ function SolarInputs({
 
           <MetricCard
             icon={DollarSign}
-            label="Estimated system cost"
-            value={formatCurrency(solarCalculation.totalInvestment)}
+            label="Estimated lease cost"
+            value={formatCurrency(solarCalculation.totalLeaseCost)}
           />
 
           <MetricCard
@@ -1420,6 +1573,8 @@ function EstimateResult({
   quantity,
   complexity,
   selectedExtras,
+  windowStyle,
+  windowMaterial,
   calculation,
   estimateReference,
   printEstimate,
@@ -1503,6 +1658,19 @@ function EstimateResult({
             />
           )}
 
+          {isWindows && (
+            <>
+              <SummaryItem
+                label="Window style"
+                value={windowStyle.label}
+              />
+              <SummaryItem
+                label="Frame material"
+                value={windowMaterial.label}
+              />
+            </>
+          )}
+
           <SummaryItem
             label="Additional allowances"
             value={
@@ -1556,7 +1724,10 @@ function SolarFinancialSummary({ calculation }) {
     firstYearUtilityCost,
     firstYearElectricitySavings,
     annualExportRevenue,
-    totalInvestment,
+    totalLeaseCost,
+    leaseTermYears,
+    leaseEscalationRate,
+    firstYearLeasePayment,
     paybackYear,
     paybackMonth,
     totalProjectedSavings,
@@ -1621,8 +1792,23 @@ function SolarFinancialSummary({ calculation }) {
           />
 
           <FinancialMetric
-            label="Total investment"
-            value={formatCurrency(totalInvestment)}
+            label="Total lease cost"
+            value={formatCurrency(totalLeaseCost)}
+          />
+
+          <FinancialMetric
+            label="Lease term"
+            value={`${leaseTermYears} years`}
+          />
+
+          <FinancialMetric
+            label="Annual lease increase"
+            value={`${leaseEscalationRate.toFixed(1)}%`}
+          />
+
+          <FinancialMetric
+            label="Year 1 lease payment"
+            value={formatCurrency(firstYearLeasePayment)}
           />
 
           <FinancialMetric
@@ -1675,6 +1861,9 @@ function SolarFinancialSummary({ calculation }) {
                   Utility cost
                 </th>
                 <th className="px-3 py-3 font-medium">
+                  Lease payment
+                </th>
+                <th className="px-3 py-3 font-medium">
                   Electricity savings
                 </th>
                 <th className="px-3 py-3 font-medium">
@@ -1700,6 +1889,9 @@ function SolarFinancialSummary({ calculation }) {
                   </td>
                   <td className="px-3 py-3">
                     {formatCurrency(row.annualUtilityCost)}
+                  </td>
+                  <td className="px-3 py-3">
+                    {formatCurrency(row.annualLeasePayment)}
                   </td>
                   <td className="px-3 py-3">
                     {formatCurrency(row.electricitySavings)}

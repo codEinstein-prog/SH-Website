@@ -93,7 +93,7 @@ export const pricingConfig = {
     },
 
     "Impact windows": {
-      basePrice: 2500,
+      basePrice: 600,
       unitRate: 1400,
       unitLabel: "Number of windows",
       unitSuffix: "windows",

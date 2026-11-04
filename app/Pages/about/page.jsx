@@ -103,20 +103,11 @@ function CompanyIntroduction() {
 
           <div className="mt-8 space-y-5 leading-8 text-warmGray">
             <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing
-              elit. Sed do eiusmod tempor incididunt ut labore et
-              dolore magna aliqua. We believe the strongest projects
-              begin by understanding how a home performs as a
-              complete system.
+              At Solar Harbour, we are committed to making sustainable energy and quality home improvements more accessible, affordable, and convenient. We specialize in solar energy leasing, roofing solutions, and impact resistant windows, providing homeowners and businesses with innovative solutions that enhance energy efficiency, property value, and long-term savings. Our solar leasing programs allow customers to enjoy the benefits of clean, renewable energy without the burden of significant upfront installation costs, making the transition to solar power easier and more financially manageable.
             </p>
 
             <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing
-              elit. Ut enim ad minim veniam, quis nostrud
-              exercitation ullamco laboris. From the first
-              consultation through final review, our focus remains
-              on clear communication, sound recommendations and
-              dependable workmanship.
+            Beyond renewable energy, Solar Harbour delivers reliable roofing services and premium impact-resistant window solutions designed to improve durability, protection, and comfort. We believe every property deserves a smarter, stronger, and more energy-efficient future. By combining quality materials, professional workmanship, and customer-focused service, we provide comprehensive solutions tailored to each client's needs. At Solar Harbour, we're not just powering homes — we're protecting investments, building resilience, and creating a brighter, more sustainable tomorrow.
             </p>
           </div>
 
