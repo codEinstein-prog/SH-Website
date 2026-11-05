@@ -107,7 +107,7 @@ function CompanyIntroduction() {
             </p>
 
             <p>
-            Beyond renewable energy, Solar Harbour delivers reliable roofing services and premium impact-resistant window solutions designed to improve durability, protection, and comfort. We believe every property deserves a smarter, stronger, and more energy-efficient future. By combining quality materials, professional workmanship, and customer-focused service, we provide comprehensive solutions tailored to each client's needs. At Solar Harbour, we're not just powering homes — we're protecting investments, building resilience, and creating a brighter, more sustainable tomorrow.
+            Beyond renewable energy, Solar Harbour delivers reliable roofing services and premium impact resistant window solutions designed to improve durability, protection, and comfort. We believe every property deserves a smarter, stronger, and more energy efficient future. By combining quality materials, professional workmanship, and customer focused service, we provide comprehensive solutions tailored to each client's needs. At Solar Harbour, we're not just powering homes we're protecting investments, building resilience, and creating a brighter, more sustainable tomorrow.
             </p>
           </div>
 
