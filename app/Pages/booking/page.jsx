@@ -287,8 +287,10 @@ function BookingForm({
         <strong className="text-charcoal">
           Notice at collection:
         </strong>{" "}
-        Contact and property information is used to respond to this
-        request and arrange service. Read the{" "}
+        We collect your name, contact details, appointment preferences,
+        property information and any message you submit to respond to this
+        request and arrange service. We do not sell this information or use
+        it for cross-context behavioral advertising. Read the{" "}
         <Link
           to="/privacy"
           className="font-semibold text-forest underline"
@@ -519,7 +521,7 @@ function BookingForm({
           />
 
           <span>
-            I agree that S/H Home Solutions may use this information
+            I agree that Solar Harbour may use this information
             to respond to my appointment request. I acknowledge the{" "}
             <Link
               to="/privacy"

@@ -4,7 +4,7 @@ import ContentSection from "/components/ContentSection";
 import PageHero from "/components/PageHero";
 import { siteConfig } from "/app/config/site";
 
-const effectiveDate = "September 23, 2026";
+const effectiveDate = "November 6, 2026";
 
 function PrivacyPage() {
   return (
@@ -21,16 +21,26 @@ function PrivacyPage() {
         <article className="mx-auto max-w-4xl">
           <div className="border border-taupe bg-white p-6 sm:p-8">
             <p className="font-semibold text-charcoal">
-              Important implementation notice
+              About this policy
             </p>
 
             <p className="mt-3 text-sm leading-7 text-warmGray">
-              This page is a general website privacy-policy template
-              and does not constitute legal advice. Before launch,
-              replace all bracketed placeholders, confirm the
-              company’s actual practices and vendors, identify the
-              jurisdictions where the business operates and obtain
-              appropriate legal review.
+              This policy describes how Solar Harbour, also presented on
+              some forms as S/H Home Solutions, handles information through
+              this website and its inquiry, estimate, qualification and
+              appointment workflows. It is informed by the structure of{" "}
+              <a
+                href="https://github.com/Automattic/legalmattic/blob/master/Privacy-Policy.md"
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-forest underline"
+              >
+                Automattic’s Creative Commons privacy policy
+              </a>
+              , but has been
+              adapted for this business and its current website practices.
+              It is not legal advice and should be reviewed when the
+              business, vendors or data practices change.
             </p>
           </div>
 
@@ -117,9 +127,9 @@ function PrivacyPage() {
             </PolicySubheading>
 
             <p>
-              When analytics, security or operational services are
-              enabled, the website or its providers may automatically
-              receive certain technical information, including:
+              The website and its hosting or security providers may
+              automatically receive technical information needed to operate,
+              secure and troubleshoot the service, including:
             </p>
 
             <ul>
@@ -139,9 +149,11 @@ function PrivacyPage() {
             </ul>
 
             <p>
-              The live policy should identify the specific analytics,
-              advertising, security and form-processing tools that
-              are actually enabled.
+              The current application does not intentionally run behavioral
+              advertising or Google Analytics. If analytics, advertising or
+              another tracking technology is added, this policy and the
+              applicable notice at collection will be updated before it is
+              used.
             </p>
           </PolicySection>
 
@@ -203,16 +215,16 @@ function PrivacyPage() {
 
             <ul>
               <li>
-                Website-hosting and content-delivery providers.
+                Cloudflare Pages and related hosting or security providers.
               </li>
               <li>
-                Form, scheduling and customer-management providers.
+                Google Forms for estimate and qualification submissions.
               </li>
               <li>
-                Email, telephone and communication providers.
+                Hunter.io for estimate-email verification.
               </li>
               <li>
-                Analytics, security and fraud-prevention providers.
+                Cal.com for appointment availability and booking.
               </li>
               <li>
                 Contractors assisting with a requested project.
@@ -232,57 +244,49 @@ function PrivacyPage() {
             </ul>
 
             <p>
-              Service providers should receive only the information
-              reasonably necessary for their role and should be
-              subject to appropriate privacy and security
-              obligations.
+              These providers receive only the information reasonably
+              necessary for the requested function. Their own privacy
+              policies may also apply to information they process.
             </p>
           </PolicySection>
 
           <PolicySection title="5. Sale or sharing of personal information">
             <p>
-              The Company does not sell personal information for
-              money.
+              Solar Harbour does not sell personal information for money and
+              does not currently share personal information for
+              cross-context behavioral advertising.
             </p>
 
             <p>
-              Certain state privacy laws may define “sale” or
-              “sharing” more broadly than an exchange for money. For
-              example, some analytics or targeted-advertising
-              activities may fall within those definitions.
+              The website does not currently use advertising cookies,
+              targeted-advertising pixels or similar tools intended to share
+              information for advertising.
             </p>
 
             <p>
-              Before enabling advertising cookies, cross-context
-              behavioral advertising or similar technologies, the
-              Company should determine whether an opt-out mechanism,
-              “Do Not Sell or Share My Personal Information” link or
-              recognition of browser-based privacy signals is
-              required.
+              If these practices change, Solar Harbour will update this
+              policy and provide any required opt-out mechanism, including
+              recognition of applicable browser-based privacy signals.
             </p>
           </PolicySection>
 
           <PolicySection title="6. Cookies and similar technologies">
             <p>
-              The production website may use cookies and similar
-              technologies for:
+              The website may use cookies or similar technologies for:
             </p>
 
             <ul>
               <li>Essential website operation.</li>
               <li>Security and fraud prevention.</li>
               <li>Remembering visitor preferences.</li>
-              <li>Measuring traffic and website performance.</li>
-              <li>
-                Supporting connected booking, form or media services.
-              </li>
+              <li>Supporting connected booking, form or communication services.</li>
             </ul>
 
             <p>
-              Optional analytics, advertising or embedded-service
-              cookies should not be enabled until the Company has
-              confirmed its vendors, disclosure obligations and any
-              required consent or preference mechanism.
+              The current application does not intentionally set optional
+              advertising or analytics cookies. Connected providers may have
+              their own cookies or technical identifiers when their services
+              are used.
             </p>
 
             <p>
@@ -299,20 +303,17 @@ function PrivacyPage() {
             </p>
 
             <ul>
-              <li>Cal.com for appointment scheduling.</li>
-              <li>Google Forms or another form provider.</li>
-              <li>Google Analytics.</li>
-              <li>Google Maps.</li>
-              <li>Cloudflare hosting and security services.</li>
-              <li>Email or customer-management platforms.</li>
-              <li>Social-media services.</li>
+              <li>Cal.com for appointment scheduling and booking.</li>
+              <li>Google Forms for estimate and qualification submissions.</li>
+              <li>Hunter.io for estimate-email verification.</li>
+              <li>Cloudflare Pages and related hosting and security services.</li>
+              <li>Email, telephone and communication providers.</li>
             </ul>
 
             <p>
-              These services may process information according to
-              their own privacy policies. The Company should remove
-              services from this list that are not used and add any
-              active provider that is missing.
+              These services may process information according to their own
+              privacy policies. This list may change as the website and its
+              service providers change.
             </p>
           </PolicySection>
 
@@ -423,42 +424,79 @@ function PrivacyPage() {
 
           <PolicySection title="11. California privacy notice">
             <p>
-              If the California Consumer Privacy Act applies to the
-              Company, California residents may receive additional
-              disclosures and rights.
+              Solar Harbour is a for-profit business that may receive
+              information from California residents through this website.
+              The California Consumer Privacy Act, as amended, applies only
+              when a business meets the statutory applicability thresholds or
+              another legal basis applies. This notice describes the
+              categories and rights relevant to this website whether or not
+              those thresholds apply to the business.
             </p>
 
             <p>
-              Categories of information potentially collected through
-              this website may include:
+              During the preceding 12 months, the website may have collected
+              the following categories of personal information:
             </p>
 
             <ul>
-              <li>Identifiers and contact information.</li>
-              <li>Property and project information.</li>
-              <li>Commercial information and service interests.</li>
               <li>
-                Internet or electronic network activity.
+                Identifiers, such as name, email address, telephone number,
+                IP address and online identifiers.
               </li>
-              <li>Approximate location information.</li>
               <li>
-                Inferences based on submitted project information.
+                Contact and property information, such as ZIP code, property
+                address, property type and ownership information.
+              </li>
+              <li>
+                Commercial and project information, such as requested
+                services, budget, timeline, appointment details and estimate
+                inputs.
+              </li>
+              <li>
+                Professional or communication information, such as preferred
+                contact method and messages submitted to the business.
+              </li>
+              <li>
+                Internet or electronic network activity, such as browser,
+                device, referral and interaction information received through
+                hosting or security services.
               </li>
             </ul>
 
             <p>
-              This information may be used and disclosed for the
-              business purposes described in this policy. Where
-              required, a notice at collection should be presented at
-              or before each point where personal information is
-              collected.
+              We collect these categories directly from the consumer through
+              website forms, by telephone or email, and automatically from
+              the device or browser when necessary to operate and secure the
+              website. We use them to respond to inquiries, evaluate and
+              prepare estimates, schedule or provide requested services,
+              verify estimate email addresses, maintain records, secure the
+              website, and comply with law.
             </p>
 
             <p>
-              If the Company later sells or shares personal
-              information as those terms are defined by California
-              law, the website and this policy must be updated with
-              any required opt-out method.
+              During the preceding 12 months, Solar Harbour has not sold or
+              shared these categories for cross-context behavioral advertising.
+              We may have disclosed them to hosting and security providers,
+              Google Forms, Hunter.io, Cal.com, communications providers,
+              contractors and professional advisers for the purposes
+              described above.
+            </p>
+
+            <p>
+              California residents may have the right to know or access,
+              delete, correct, opt out of sale or sharing, limit certain uses
+              of sensitive personal information, and receive equal treatment
+              when exercising applicable rights. These rights are subject to
+              exceptions and verification requirements.
+            </p>
+
+            <p>
+              To submit a privacy request, contact Solar Harbour using the
+              privacy email address or telephone number listed in Section 15.
+              We may ask for information reasonably necessary to verify the
+              request. We generally respond within 45 days, subject to lawful
+              extensions and applicable exceptions. Authorized agents may
+              submit requests with proof of authorization.
             </p>
           </PolicySection>
 
@@ -512,15 +550,18 @@ function PrivacyPage() {
               </p>
 
               <p className="mt-3">
-                Legal company name: [INSERT LEGAL NAME]
+                Legal/business name: Solar Harbour (also presented as S/H
+                Home Solutions)
               </p>
 
               <p>
-                Mailing address: [INSERT BUSINESS ADDRESS]
+                Mailing address: A public mailing address has not been
+                provided for this website. Contact us by email or telephone
+                for the current business mailing address.
               </p>
 
               <p>
-                Service area: [INSERT SERVICE AREA]
+                Service area: {siteConfig.serviceArea}
               </p>
 
               <p>

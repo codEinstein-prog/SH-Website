@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Calculator,
   Check,
@@ -1101,6 +1102,23 @@ function CalculatorAccessGate({
         </div>
 
         <form onSubmit={onSubmit} className="grid gap-5" noValidate>
+          <div className="border-l-4 border-gold bg-cream px-5 py-4 text-sm leading-6 text-warmGray">
+            <strong className="text-charcoal">
+              Notice at collection:
+            </strong>{" "}
+            We collect your name, email, phone number and property address to
+            verify your email, provide the estimate and follow up about
+            requested services. We do not sell this information or use it for
+            cross-context behavioral advertising. Read the{" "}
+            <Link
+              to="/privacy"
+              className="font-semibold text-forest underline"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </div>
+
           <div className="grid gap-5 sm:grid-cols-2">
             <FormField label="Full name *" htmlFor="leadFullName">
               <div className="relative">

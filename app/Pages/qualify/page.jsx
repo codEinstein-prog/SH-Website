@@ -921,8 +921,11 @@ function ContactDetailsStep({
         <strong className="text-charcoal">
           Notice at collection:
         </strong>{" "}
-        We collect the information below to respond to your inquiry,
-        assess project fit and arrange requested services. Review our{" "}
+        We collect your contact details, property and project information,
+        and any financial or preference information you provide to respond
+        to your inquiry, assess project fit and arrange requested services.
+        We do not sell this information or use it for cross-context
+        behavioral advertising. Review our{" "}
         <Link
           to="/privacy"
           className="font-semibold text-forest underline"
@@ -1057,7 +1060,7 @@ function ContactDetailsStep({
         />
 
         <span>
-          I agree that S/H Home Solutions may use this information
+          I agree that Solar Harbour may use this information
           to evaluate and respond to my service request. I have read
           the{" "}
           <Link
