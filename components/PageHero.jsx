@@ -2,7 +2,7 @@ function PageHero({
   eyebrow,
   title,
   description,
-  image = "/images/hero-home.png",
+  image = `${import.meta.env.BASE_URL}images/hero-home.png`,
   imageAlt = "Contemporary home improvement project"
 }) {
   return (

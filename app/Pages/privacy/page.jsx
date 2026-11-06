@@ -13,7 +13,7 @@ function PrivacyPage() {
         eyebrow="Legal"
         title="Privacy Policy"
         description="A plain-language description of how information submitted through this website may be collected, used and protected."
-        image="/images/hero-home.png"
+        image={`${import.meta.env.BASE_URL}images/hero-home.png`}
         imageAlt="Contemporary residential property"
       />
 

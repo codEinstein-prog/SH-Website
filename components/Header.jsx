@@ -35,7 +35,7 @@ function Header() {
           aria-label={`${siteConfig.companyName} home`}
         >
           <img
-            src="/images/ChatGPT Image Sep 27, 2026, 06_44_25 AM.png"
+            src={`${import.meta.env.BASE_URL}images/ChatGPT Image Sep 27, 2026, 06_44_25 AM.png`}
             alt="Solar Harbour company monogram"
             className="h-12 w-18 object-cover mix-blend-multiply"
           />

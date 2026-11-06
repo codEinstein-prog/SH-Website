@@ -49,7 +49,7 @@ const projects = [
     title: "Whole home energy upgrade",
     description:
       "Integrated solar array and exterior modernization.",
-    image: "./images/pexels-rdne-8782730.jpg",
+    image: `${import.meta.env.BASE_URL}images/pexels-rdne-8782730.jpg`,
     imageAlt:
       "Modern coastal home with a roof-mounted solar array",
     featured: true
@@ -59,7 +59,7 @@ const projects = [
     title: "Coastal roof replacement",
     description:
       "A durable standing-seam roofing system with a clean architectural finish.",
-    image: "./images/project-roof.png",
+    image: `${import.meta.env.BASE_URL}images/project-roof.png`,
     imageAlt:
       "New charcoal standing-seam metal roof",
     featured: false
@@ -69,7 +69,7 @@ const projects = [
     title: "Impact glass transformation",
     description:
       "Black framed impact windows designed for protection and natural light.",
-    image: "./images/hurricane-impact-resistant-windows-and-doors-in-lantana.png",
+    image: `${import.meta.env.BASE_URL}images/hurricane-impact-resistant-windows-and-doors-in-lantana.png`,
     imageAlt:
       "Black-framed impact windows on a coastal home",
     featured: false
@@ -96,7 +96,7 @@ function HeroSection() {
   return (
     <section className="relative min-h-[690px] overflow-hidden text-white md:min-h-[760px]">
       <img
-        src="./images/hero-home.png"
+        src={`${import.meta.env.BASE_URL}images/hero-home.png`}
         alt="Contemporary coastal home with solar panels, metal roofing and impact windows"
         className="absolute inset-0 h-full w-full object-cover"
       />

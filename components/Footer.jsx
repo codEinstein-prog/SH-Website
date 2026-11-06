@@ -79,7 +79,7 @@ function Footer() {
               rel="noopener noreferrer"
             >
               <img
-                src="/instagram.png"
+                src={`${import.meta.env.BASE_URL}instagram.png`}
                 alt="Instagram" 
                 className="h-10 w-10 object-contain brightness-0 invert transition hover:opacity-80"
             />
@@ -92,7 +92,7 @@ function Footer() {
             rel="noopener noreferrer"
             >
             <img 
-                src="/facebook.png"
+                src={`${import.meta.env.BASE_URL}facebook.png`}
                 alt="Facebook" 
                 className="h-10 w-10 object-contain brightness-0 invert transition hover:opacity-80"
             />

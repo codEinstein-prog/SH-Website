@@ -73,7 +73,7 @@ function AboutPage() {
         eyebrow="About us"
         title="Better homes begin with better decisions."
         description="We bring roofing, solar and impact window expertise together to help property owners plan with clarity and build with confidence."
-        image="images/hero-home.png"
+        image={`${import.meta.env.BASE_URL}images/hero-home.png`}
         imageAlt="Contemporary home with roofing, solar panels and impact windows"
       />
 
@@ -122,7 +122,7 @@ function CompanyIntroduction() {
 
         <div className="relative">
           <img
-            src="images/project-windows.png"
+            src={`${import.meta.env.BASE_URL}images/project-windows.png`}
             alt="Modern impact-window installation"
             className="h-[440px] w-full object-cover sm:h-[540px]"
           />

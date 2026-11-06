@@ -212,7 +212,7 @@ function QualifyPage() {
         eyebrow="Project qualification"
         title="Let’s see if your project is a fit."
         description="Share a few practical details. We’ll use them only to understand your needs and recommend the appropriate next step."
-        image="./images/project-roof.png"
+        image={`${import.meta.env.BASE_URL}images/project-roof.png`}
         imageAlt="Premium residential roofing installation"
       />
 
