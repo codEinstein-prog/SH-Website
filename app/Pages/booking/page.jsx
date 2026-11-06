@@ -132,7 +132,7 @@ function BookingPage() {
         eyebrow="Consultations and site visits"
         title="Choose the right next step."
         description="Request focused time with the team. Qualified projects can move from an initial consultation to an on-property assessment."
-        image="/images/project-windows.png"
+        image="images/project-windows.png"
         imageAlt="Modern home with black-framed impact windows"
       />
 

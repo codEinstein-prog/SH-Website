@@ -760,7 +760,7 @@ function EstimatePage() {
         eyebrow="Preliminary estimate"
         title="Start with a clearer sense of scope."
         description="Build an illustrative project range using a few basic inputs. Final pricing requires measurements, specifications and a property assessment."
-        image="/images/hero-home.png"
+        image="images/hero-home.png"
         imageAlt="Contemporary property with solar panels and premium roofing"
       />
 
