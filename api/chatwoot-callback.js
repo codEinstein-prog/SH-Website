@@ -1,3 +1,5 @@
+import { createVercelHandler } from "./_vercel.js";
+
 // Optional Cloudflare Pages Function: functions/api/chatwoot-callback.js
 // If the Chatwoot API inbox creation form REQUIRES a callback URL,
 // configure https://YOUR-SITE.example/api/chatwoot-callback.
@@ -6,3 +8,5 @@
 export function onRequestPost() {
   return new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });
 }
+
+export default createVercelHandler(onRequestPost);

@@ -1,3 +1,8 @@
+import {
+  createVercelHandler,
+  isAllowedOrigin,
+} from "./_vercel.js";
+
 // Cloudflare Pages Function: functions/api/chat.js
 // Dedicated Chatwoot API inbox for the CUSTOM website chat, not the OpenWA inbox.
 const COOKIE = 'site_chat_v2';
@@ -47,9 +52,12 @@ async function sessionCookie(session, cfg, request) {
   const signature = new Uint8Array(await crypto.subtle.sign(
     'HMAC', await hmacKey(cfg.secret), encoder.encode(data)));
   const isHttps = new URL(request.url).protocol === 'https:';
+  const requestOrigin = request.headers.get('Origin');
+  const isCrossSite =
+    Boolean(requestOrigin) && requestOrigin !== new URL(request.url).origin;
   return [
     `${COOKIE}=${data}.${base64url(signature)}`,
-    'HttpOnly', 'SameSite=Lax', 'Path=/api/chat',
+    'HttpOnly', isCrossSite ? 'SameSite=None' : 'SameSite=Lax', 'Path=/api/chat',
     `Max-Age=${MAX_AGE}`,
     ...(isHttps ? ['Secure'] : []), // For local HTTP testing on port 2886.
   ].join('; ');
@@ -151,7 +159,7 @@ export async function onRequestGet({ request, env }) {
 // POST /api/chat -> Create contact+conversation if needed, then submit visitor message.
 export async function onRequestPost({ request, env }) {
   const origin = request.headers.get('Origin');
-  if (origin && origin !== new URL(request.url).origin)
+  if (origin && !isAllowedOrigin(request))
     return reply({ error: 'Origin not allowed.' }, 403);
   if (!(request.headers.get('Content-Type') || '').toLowerCase().startsWith('application/json'))
     return reply({ error: 'Expected application/json.' }, 415);
@@ -205,3 +213,18 @@ export async function onRequestPost({ request, env }) {
     return errorResponse(error, cookie);
   }
 }
+
+export default createVercelHandler(async ({ request, env }) => {
+  if (request.method === "GET") {
+    return onRequestGet({ request, env });
+  }
+
+  if (request.method === "POST") {
+    return onRequestPost({ request, env });
+  }
+
+  return new Response("Method Not Allowed", {
+    status: 405,
+    headers: { Allow: "GET, POST" },
+  });
+});

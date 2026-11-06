@@ -1,3 +1,5 @@
+import { createVercelHandler } from "./_vercel.js";
+
 const FIELD_LIMIT = 2000;
 
 const formEntries = {
@@ -58,3 +60,5 @@ export async function onRequestPost({ request, env }) {
 }
 
 function jsonResponse(data, status = 200) { return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }); }
+
+export default createVercelHandler(onRequestPost);

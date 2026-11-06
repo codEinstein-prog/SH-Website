@@ -1,4 +1,6 @@
 
+import { createVercelHandler } from "./_vercel.js";
+
 export async function onRequestPost({ request, env }) {
   let body;
 
@@ -160,3 +162,5 @@ function jsonResponse(data, status = 200) {
     },
   });
 }
+
+export default createVercelHandler(onRequestPost);

@@ -1,3 +1,8 @@
+import {
+  createVercelHandler,
+  isAllowedOrigin,
+} from "./_vercel.js";
+
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 const appointmentTypes = new Set([
@@ -17,7 +22,7 @@ const timeWindows = new Set(["Morning", "Afternoon", "Flexible"]);
 
 export async function onRequestPost({ request, env }) {
   const origin = request.headers.get("Origin");
-  if (origin && origin !== new URL(request.url).origin) {
+  if (origin && !isAllowedOrigin(request)) {
     return jsonResponse({ success: false, error: "Origin not allowed." }, 403);
   }
 
@@ -384,3 +389,5 @@ function jsonResponse(data, status = 200) {
     },
   });
 }
+
+export default createVercelHandler(onRequestPost);
