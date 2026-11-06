@@ -1,12 +1,24 @@
-import { createVercelHandler } from "./_vercel.js";
+/**
+ * Solar Harbour — Chatwoot Callback
+ * Runtime: Vercel Node.js
+ *
+ * This endpoint acknowledges Chatwoot callbacks.
+ * Messages are retrieved separately through /api/chat.
+ *
+ * It does not process or store callback payloads.
+ */
 
-// Optional Cloudflare Pages Function: functions/api/chatwoot-callback.js
-// If the Chatwoot API inbox creation form REQUIRES a callback URL,
-// configure https://YOUR-SITE.example/api/chatwoot-callback.
-// This endpoint purposefully discards callbacks because the widget polls /api/chat.
-// Do not use this as a message-ingestion endpoint without verifying webhook signatures.
-export function onRequestPost() {
-  return new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });
+export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store");
+
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+
+    return res.status(405).json({
+      success: false,
+      error: "Method not allowed",
+    });
+  }
+
+  return res.status(204).end();
 }
-
-export default createVercelHandler(onRequestPost);
