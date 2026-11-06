@@ -8,14 +8,14 @@ const formEntries = {
   service: "GOOGLE_FORM_SERVICE",
   propertyType: "GOOGLE.FORM_TYPE_ENTRY",
   ownership: "GOOGLE.FORM_OWN_ENTRY",
-  roofType: "GOOGLE.FORM_RTYPE_ENTRY",
-  roofSize: "GOOGLE.FORM_RSIZE_ENTRY",
-  roofCondition: "GOOGLE.FORM_RCONDITION_ENTRY",
+  roofType: "GOOGLE_FORM_RTYPE_ENTRY",
+  roofSize: "GOOGLE_FORM_RSIZE_ENTRY",
+  roofCondition: "GOOGLE_FORM_RCONDITION_ENTRY",
   timeline: "GOOGLE.FORM_TIMELINE_ENTRY",
   budget: "GOOGLE.FORM_BUDGET_ENTRY",
   projectDescription: "GOOGLE_FORM_NOTES_ENTRY",
-  creditScore: "GOOGLE.FORM_CREDITSCORE_ENTRY",
-  preferredContact: "GOOGLE.FORM_CONTACT_ENTRY",
+  creditScore: "GOOGLE_FORM_CREDITSCORE_ENTRY",
+  preferredContact: "GOOGLE_FORM_CONTACT_ENTRY",
 };
 
 export async function onRequestPost({ request, env }) {
