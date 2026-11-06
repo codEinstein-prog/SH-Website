@@ -578,7 +578,7 @@ function EstimatePage() {
 
 
     const verificationResponse = await fetch(
-      "/api/verify-email",
+      'https://sh-website-ten.vercel.app/',
       {
         method: "POST",
         headers: {
@@ -612,7 +612,7 @@ function EstimatePage() {
 
 
       // STEP 2: Send lead to backend for Google Forms
-      const leadResponse = await fetch("/api/estimate-lead", {
+      const leadResponse = await fetch('https://sh-website-ten.vercel.app/', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -116,7 +116,7 @@ function WhatsAppChat() {
     if (pollingRef.current || sendingRef.current) return;
     pollingRef.current = true;
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch('https://sh-website-ten.vercel.app/', {
         credentials: "same-origin",
         cache: "no-store",
       });
@@ -162,7 +162,7 @@ function WhatsAppChat() {
     setSendError("");
 
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch('https://sh-website-ten.vercel.app/', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",

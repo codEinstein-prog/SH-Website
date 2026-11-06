@@ -190,7 +190,7 @@ export async function onRequestPost({ request, env }) {
 
   let bookingResponse;
   try {
-    bookingResponse = await fetch("https://api.cal.com/v2/bookings", {
+    bookingResponse = await fetch("https://sh-website-ten.vercel.app/", {
       method: "POST",
       headers: {
         Accept: "application/json",

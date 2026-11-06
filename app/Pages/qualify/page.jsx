@@ -189,7 +189,7 @@ function QualifyPage() {
     setSubmitting(true);
     setFormError("");
     try {
-      const response = await fetch("/api/qualification-lead", {
+      const response = await fetch('https://sh-website-ten.vercel.app/', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)

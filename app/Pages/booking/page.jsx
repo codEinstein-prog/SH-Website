@@ -95,7 +95,7 @@ function BookingPage() {
     setFormError("");
 
     try {
-      const response = await fetch("/api/booking", {
+      const response = await fetch('https://sh-website-ten.vercel.app/', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
