@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import ContentSection from "/components/ContentSection";
 import PageHero from "/components/PageHero";
 import PrimaryButton from "/components/PrimaryButton";
+import { API_BASE_URL } from "/app/config/api";
 
 const initialFormData = {
   service: "",
@@ -189,7 +190,7 @@ function QualifyPage() {
     setSubmitting(true);
     setFormError("");
     try {
-      const response = await fetch('https://sh-website-ten.vercel.app/', {
+      const response = await fetch(API_BASE_URL + "/api/qualification-lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)

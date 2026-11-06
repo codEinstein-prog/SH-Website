@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./whatsapp.css";
+import { API_BASE_URL } from "/app/config/api";
 
 const INITIAL_MESSAGE = {
   id: 1,
@@ -116,7 +117,7 @@ function WhatsAppChat() {
     if (pollingRef.current || sendingRef.current) return;
     pollingRef.current = true;
     try {
-      const response = await fetch('https://sh-website-ten.vercel.app/', {
+      const response = await fetch(API_BASE_URL + "/api/chat", {
         credentials: "same-origin",
         cache: "no-store",
       });
@@ -162,7 +163,7 @@ function WhatsAppChat() {
     setSendError("");
 
     try {
-      const response = await fetch('https://sh-website-ten.vercel.app/', {
+      const response = await fetch(API_BASE_URL + "/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",

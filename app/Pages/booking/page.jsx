@@ -15,6 +15,7 @@ import ContentSection from "/components/ContentSection";
 import PageHero from "/components/PageHero";
 import PrimaryButton from "/components/PrimaryButton";
 import { siteConfig } from "/app/config/site";
+import { API_BASE_URL } from "/app/config/api";
 
 const initialBookingData = {
   appointmentType: "",
@@ -95,7 +96,7 @@ function BookingPage() {
     setFormError("");
 
     try {
-      const response = await fetch('https://sh-website-ten.vercel.app/', {
+      const response = await fetch(API_BASE_URL + "/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

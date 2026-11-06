@@ -23,6 +23,7 @@ import ContentSection from "/components/ContentSection";
 import PageHero from "/components/PageHero";
 import PrimaryButton from "/components/PrimaryButton";
 import { pricingConfig } from "/app/config/pricing";
+import { API_BASE_URL } from "/app/config/api";
 
 /*
  * EstimatePage
@@ -579,7 +580,7 @@ function EstimatePage() {
 
 
     const verificationResponse = await fetch(
-      'https://sh-website-ten.vercel.app/',
+      API_BASE_URL + "/api/verify-email",
       {
         method: "POST",
         headers: {
@@ -613,7 +614,7 @@ function EstimatePage() {
 
 
       // STEP 2: Send lead to backend for Google Forms
-      const leadResponse = await fetch('https://sh-website-ten.vercel.app/', {
+      const leadResponse = await fetch(API_BASE_URL + "/api/estimate-lead", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
