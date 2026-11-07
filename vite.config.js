@@ -16,5 +16,5 @@ export default defineConfig(({ mode }) => ({
     open: true,
   },
 
-  base: '/SH-Website/',
+  base: '/',
 }));
