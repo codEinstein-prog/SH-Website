@@ -29,7 +29,7 @@ const MAX_MESSAGE_LENGTH = 4000;
 const UPSTREAM_TIMEOUT = 15000;
 
 const DEFAULT_ORIGIN =
-  "https://codeinstein-prog.github.io";
+  "https://solarhabour.ng-support-staff.uk";
 
 const QUICK_QUESTIONS = [
   "quote",
